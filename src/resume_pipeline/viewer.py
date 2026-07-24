@@ -45,7 +45,7 @@ def describe(spec: compose.Spec) -> dict:
 
 def page(specs, resume, *, preview: str = "file", exportable: bool = False,
          pages: int = 0, markups: dict | None = None, css: dict | None = None,
-         count: int = 24, topbar: str = "") -> str:
+         count: int = 24, topbar: str = "", footer: str = "") -> str:
     """Render the viewer.
 
     `preview` is one of:
@@ -55,6 +55,11 @@ def page(specs, resume, *, preview: str = "file", exportable: bool = False,
                 browser, and every preview is rebuilt from the baked `markups`/`css`
                 tables (the hosted demo, RP-0038). `markups`/`css` come from
                 `demo.bake`; `count` is the page size.
+
+    `topbar`/`footer` are the *site's* chrome, and are passed only by the hosted demo:
+    a local `catalogue` or `serve` is a tool on your machine, not a page of a website,
+    so it gets neither. Both are markup rather than a flag, so this module never has to
+    know what the site's nav says.
     """
     options = [describe(s) for s in specs]
     title = html.escape(resume.name or "Resume")
@@ -82,8 +87,11 @@ def page(specs, resume, *, preview: str = "file", exportable: bool = False,
             entry["fonts"] = {t[0]: {"body": t[1], "display": t[2]}
                               for t in compose.TYPEFACES}
         axes_meta.append(entry)
+    # The footer carries its own measure wrapper, so an absent one leaves no empty box.
+    foot = f'<div class="wrap foot">{footer}</div>' if footer else ""
     return _PAGE.replace("__KIT__", theme.TOKENS + theme.BASE) \
                 .replace("__TOPBAR__", topbar) \
+                .replace("__FOOTER__", foot) \
                 .replace("__PAGES__", str(pages)) \
                 .replace("__AXES__", json.dumps(axes_meta)) \
                 .replace("__TITLE_JS__", json.dumps(title)) \
@@ -111,37 +119,53 @@ _PAGE = r"""<!doctype html>
   /* Design kit (tokens + shared components) lives in theme.py; the landing and this
      viewer both draw from it, so the two surfaces are one system. Committed dark. */
 __KIT__
-  html,body{margin:0;height:100%}
+  html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.5}
 
-  /* The app header sits under the shared site nav. The nav scrolls away (static)
-     so the app header alone is the sticky element — no two-sticky overlap. */
+  /* ── The intro ───────────────────────────────────────────────────────────
+     The page opens like a page of the site — eyebrow, headline, lede — and that
+     block scrolls away, leaving only the control bar stuck to the top. It is the
+     onboarding copy the old header had to carry in its gutter, given somewhere to
+     live where it costs the working view nothing. */
+  .intro{padding:38px 0 26px}
+  .intro h1{font-size:34px;line-height:1.08;font-weight:800;letter-spacing:-.02em;
+            margin:17px 0 12px}
+  .lede{color:var(--muted);font-size:15.5px;max-width:62ch;margin:0}
+  .lede b{color:var(--ink);font-weight:500}
+  .hint{margin:13px 0 0;color:var(--muted);font-size:13.5px;max-width:74ch;
+        border-left:2px solid var(--line2);padding-left:14px}
+  /* A quiet text-weight toggle for the fuller explanation — a returning reader
+     doesn't need it, so it starts closed and the choice persists. */
+  .hintbtn{margin-top:14px;padding:2px 0;background:none;border:0;
+           color:var(--muted);font-size:13px;text-decoration:underline;
+           text-underline-offset:3px;cursor:pointer}
+  .hintbtn:hover{color:var(--accent)}
+
+  /* ── The control bar ─────────────────────────────────────────────────────
+     A full-bleed band that sticks once the intro has scrolled past, with its
+     content on the page measure so the filters share the grid's left edge. The
+     site nav scrolls away (static) so this is the only sticky element — no
+     two-sticky overlap. Blurred ground, matching the nav's treatment. */
   .sitenav{position:static}
-  header{position:sticky;top:0;z-index:20;padding:14px 20px 10px;background:var(--card);
-         border-bottom:1px solid var(--line)}
-  /* Two columns: identity/status on the left, controls on the right. Keeping the
-     hold bars out of the left gutter stops the header becoming one tall stack that
-     pushes the grid down and leaves the right half empty. */
-  .hdr{display:grid;grid-template-columns:1fr auto;gap:11px 20px;align-items:center}
-  h1{font-size:15px;margin:0;letter-spacing:-.2px;font-weight:700}
+  header{position:sticky;top:0;z-index:20;border-top:1px solid var(--line);
+         border-bottom:1px solid var(--line);
+         background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px)}
+  .bar{display:flex;flex-direction:column;gap:10px;padding-top:12px;padding-bottom:12px}
+  /* Colour and the dropdowns sit side by side on one line and share a baseline.
+     They stay separate containers so that when the line is too narrow the whole
+     dropdown group drops below the swatches — a wrap can never interleave a
+     swatch with a pill (RP-0043). */
+  .filters{display:flex;flex-wrap:wrap;align-items:center;gap:9px 20px}
+  /* Status line: the live count on the left, the pager opposite. Wraps as a whole
+     when it must, so the pager drops to its own line intact rather than crushing. */
+  .status{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap}
   .meta{color:var(--muted);font-size:12.5px}
-  .navwrap{display:flex;align-items:center;gap:14px;justify-self:end}
+  .navwrap{display:flex;align-items:center;gap:14px;margin-left:auto}
   /* The count/holds text yields so the four nav controls never wrap (RP-0043,
      regression-checklist row 9): pair min-width:0 here with flex-shrink:0 on .nav. */
   #pageMeta{min-width:0}
-  .hint{margin:8px 0 0;color:var(--muted);font-size:12.5px;max-width:82ch}
-  .hint[hidden]{display:none}
   .nav{display:flex;gap:6px;align-items:center;flex-shrink:0}
   .nav button{padding:5px 11px}
-  /* A quiet, text-weight toggle — onboarding copy a returning user doesn't need.
-     Lives in the header's left gutter on the dropdown row (the hero-shot layout),
-     so it costs no line of its own; `justify-self:start` keeps it left, and the
-     grid's `align-items:center` lines it up with the dropdowns across the gutter.
-     Below 900px it drops below both filter rows (see the media query). */
-  .hintbtn{justify-self:start;padding:2px 0;background:none;border:0;
-           color:var(--muted);font-size:12.5px;text-decoration:underline;
-           text-underline-offset:3px;cursor:pointer}
-  .hintbtn:hover{color:var(--accent)}
 
   /* Buttons (Open / Copy / pager / dialog) come from the shared kit — same system
      as the landing's CTAs. Only the app-specific controls below override it. */
@@ -184,7 +208,6 @@ __KIT__
 
   .pop{position:absolute;z-index:60;background:var(--card);border:1px solid var(--line);
        border-radius:12px;padding:13px 15px;box-shadow:var(--shadow);max-width:min(560px,92vw)}
-  .pop[hidden]{display:none}
   .poptitle{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
             font-weight:700;margin-bottom:9px;display:flex;gap:9px;align-items:center}
   .axvals{display:flex;flex-wrap:wrap;gap:6px}
@@ -217,16 +240,20 @@ __KIT__
   .t-band .t-w2{height:2px;border-radius:1px;background:#fff;opacity:.55;width:80%}
   .t-sp{flex:1}
 
-  .grid{display:grid;gap:18px;padding:20px;
+  /* The grid rides the page measure, like everything else on the site. `.card` is
+     the kit's surface — only the parts a preview card needs beyond it are here. */
+  .grid{display:grid;gap:22px;padding:26px 0 40px;
         grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
-        overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;
-        transition:border-color .12s,transform .12s}
-  .card:hover{transform:translateY(-2px)}
+  .foot{padding-bottom:56px}
+  .card{overflow:hidden;display:flex;flex-direction:column;
+        transition:border-color .14s,transform .14s,box-shadow .14s}
+  .card:hover{transform:translateY(-3px);border-color:var(--line2);
+              box-shadow:0 1px 2px rgba(0,0,0,.5),0 20px 44px rgba(0,0,0,.55)}
 
   /* A real 8.5in-wide render, scaled down — not a screenshot. What you see here is
-     exactly what publishes. */
-  .shot{position:relative;height:400px;overflow:hidden;background:#fff;cursor:pointer;
+     exactly what publishes. An aspect ratio rather than a fixed height, so every
+     card shows the same *fraction* of the page whatever width the column ends up. */
+  .shot{position:relative;aspect-ratio:816/1010;overflow:hidden;background:#fff;cursor:pointer;
         border-bottom:1px solid var(--line)}
   .shot iframe{position:absolute;top:0;left:0;width:816px;height:1056px;border:0;
                transform-origin:top left;pointer-events:none}
@@ -235,13 +262,8 @@ __KIT__
   /* Cards in a row are as tall as the tallest, and chip rows wrap to different
      heights — so the actions are pinned to the bottom rather than floating
      wherever the chips happen to end. */
-  .info{padding:9px 11px;display:flex;flex-direction:column;gap:7px;flex:1}
-  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  /* Names are long and hyphenated by design. `break-all` would split them
-     mid-word (`badge-co / mpact`); this wraps at the hyphens instead. */
-  .nm{font-size:12px;font-weight:700;letter-spacing:-.1px;
-      overflow-wrap:anywhere;word-break:normal;line-height:1.35}
-  .chips{display:flex;flex-wrap:wrap;gap:4px}
+  .info{padding:13px 14px 14px;display:flex;flex-direction:column;gap:11px;flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
   .chip{font:inherit;font-size:10.5px;background:var(--bg);border:1px solid var(--line);
         border-radius:20px;padding:2px 8px;color:var(--muted);cursor:pointer;
         transition:border-color .12s,background .12s,color .12s}
@@ -252,8 +274,8 @@ __KIT__
   /* Pinned to the bottom: cards in a row are as tall as the tallest, and chip
      rows wrap to different heights, so without this the buttons sit at a
      different height on every card. */
-  .acts{display:flex;gap:6px;margin-top:auto}
-  .acts button{flex:1;padding:5px 0;font-size:12px}
+  .acts{display:flex;gap:7px;margin-top:auto;padding-top:2px}
+  .acts button{flex:1;padding:7px 0;font-size:12.5px}
 
   dialog{border:0;border-radius:14px;padding:0;background:var(--card);color:var(--ink);
          width:min(94vw,900px);box-shadow:var(--shadow)}
@@ -271,16 +293,13 @@ __KIT__
      back to the grid behind it. Lock the page while the modal is up. */
   body.modal-open{overflow:hidden}
 
-  /* Two rows, one group (RP-0043). Colour keeps its own row — a swatch *is* the
-     value, which no label improves on — and the six dropdowns sit on the row
-     directly below it. They read as one group by adjacency and shared alignment,
-     not by being concatenated into a single wrapping bar (which interleaves
-     swatches and pills the moment it wraps). Both are the right-column control;
-     #axes takes grid-column 2 so no phantom item lands in the left gutter.
-     Selection is multi-select throughout — two swatches are an OR. */
-  .palette{display:flex;align-items:center;gap:8px;margin:0;flex-wrap:wrap;
-           justify-content:flex-end}
-  #axes{grid-column:2}
+  /* One group, two containers (RP-0043). Colour keeps its own chrome — a swatch
+     *is* the value, which no label improves on — and the six dropdowns sit beside
+     it. They stay separate containers rather than one concatenated bar, because a
+     single bar interleaves swatches and pills the moment it wraps; here the whole
+     dropdown group drops to the next line instead. Multi-select throughout — two
+     swatches are an OR. */
+  .palette{display:flex;align-items:center;gap:8px;margin:0;flex-wrap:wrap}
   /* Label + swatches move as one: a wrap that split them would read as two
      controls, and balanceWrap counts children, so this must be a single item. */
   .swgroup{display:inline-flex;align-items:center;gap:7px}
@@ -290,64 +309,66 @@ __KIT__
          background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;
          font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
   .toast.show{opacity:1}
-  /* ── Narrow: one column ──────────────────────────────────────────────────
-     Below this the two columns starve each other. The controls cannot shrink —
-     pills don't break mid-word — so the identity column collapses and the title
-     wraps to three lines beside a half-empty control column. One column is the
-     honest answer here: taller, but nothing is crushed.
-     Kept at the END of the sheet deliberately: these override `.navwrap` and
-     `.palette`, which are declared later than `.hdr`, so an earlier media block
-     would lose the cascade despite matching. */
+  /* ── Narrow ──────────────────────────────────────────────────────────────
+     The control bar needs no restructuring — `.filters` already drops the dropdown
+     group below the swatches on its own. Only the intro's display type has to come
+     down, or a 34px headline eats the first screen.
+     Kept at the END of the sheet deliberately, so these win the cascade against
+     the rules they override regardless of where those are declared. */
   @media (max-width:900px){
-    .hdr{grid-template-columns:1fr;gap:9px}
-    .navwrap{justify-self:start}
-    .palette{justify-content:flex-start}
-    /* One column: #axes drops its explicit column-2 placement, else it would
-       spawn a phantom second column and the rows would not stack. And the
-       explainer toggle drops below both filter rows (order:1) rather than
-       wedging between colour and the dropdowns. */
-    #axes{grid-column:auto}
-    .hintbtn{order:1}
-    h1{font-size:16px}
+    .intro{padding:28px 0 20px}
+    .intro h1{font-size:26px}
+    .lede{font-size:14.5px}
+    .grid{gap:16px}
   }
 </style></head><body>
 __TOPBAR__
-<header>
-  <!-- Three rows, two columns. Left: who/where you are. Right: the controls that act
-       on the grid. The layout count / active holds keep their own line — variable-length
-       text on the nav row used to push the buttons onto a second row once an axis was held. -->
-  <div class="hdr">
-    <h1>__TITLE__ — Layouts</h1>
-    <span class="navwrap">
-      <span class="meta" id="pageMeta"></span>
-      <span class="nav" id="nav" hidden>
-        <button id="first" title="Back to page 1">«</button>
-        <button id="prev" title="Previous page">‹</button>
-        <button id="shuffle">Shuffle</button>
-        <button id="next" title="Next page">›</button>
-      </span>
-    </span>
-
-    <div class="meta statusline" id="meta"></div>
-    <!-- Two rows that read as one group (RP-0043): colour swatches on top, the
-         six dropdowns directly below. Kept as separate containers so a wrap can
-         never interleave swatches with pills. -->
-    <div class="palette" id="palette"></div>
-    <!-- The explainer toggle sits in the left gutter on the dropdown row (the
-         hero-shot layout) rather than a line of its own; below 900px it drops
-         below both filter rows (order:1) instead of wedging between them. -->
+<!-- The intro is page content, not chrome: it scrolls away and leaves the control
+     bar alone at the top. The profile's name is the eyebrow rather than an <h1> —
+     the subject of this page is the space, not the person in the sample. -->
+<section class="intro">
+  <div class="wrap">
+    <span class="pill"><b></b>Layout browser · __TITLE__</span>
+    <h1>__TOTAL__ layouts, one profile.</h1>
+    <p class="lede">Every card below is a <b>live render</b> of the same profile — not a
+      screenshot, and exactly what publishes. Hold a <b>colour</b> or <b>typeface</b> to keep it
+      constant while you judge the rest, page through the space, and open any layout full size.</p>
     <button class="hintbtn" id="hintBtn" aria-expanded="false" aria-controls="hint">What is this?</button>
-    <div class="palette" id="axes"></div>
+    <p class="hint" id="hint" hidden>Layouts are <b>generated</b>, not templates — each is one combination of
+    seven independent choices, so there are __TOTAL__ of them. The arrows walk the space in
+    order; <b>Shuffle</b> jumps somewhere else entirely. Pick a <b>colour</b> or <b>typeface</b>
+    to hold it constant while you judge the rest. Open any layout, then <b>Make this my resume</b>
+    to publish it — every preview is a live render, identical to what gets published.</p>
+  </div>
+</section>
+
+<!-- The control bar: filters on one line, the live count and the pager on the next.
+     Sticks to the top once the intro is past, so it is the only thing competing with
+     the grid for the working view. `#pop` stays a child of the sticky element — it is
+     positioned against it. -->
+<header>
+  <div class="wrap bar">
+    <div class="filters">
+      <div class="palette" id="palette"></div>
+      <div class="palette" id="axes"></div>
+    </div>
+    <div class="status">
+      <span class="meta" id="meta"></span>
+      <span class="navwrap">
+        <span class="meta" id="pageMeta"></span>
+        <span class="nav" id="nav" hidden>
+          <button id="first" title="Back to page 1">«</button>
+          <button id="prev" title="Previous page">‹</button>
+          <button id="shuffle">Shuffle</button>
+          <button id="next" title="Next page">›</button>
+        </span>
+      </span>
+    </div>
   </div>
   <div class="pop" id="pop" hidden></div>
-  <p class="hint" id="hint" hidden>Layouts are <b>generated</b>, not templates — each is one combination of
-  seven independent choices, so there are __TOTAL__ of them. The arrows walk the space in
-  order; <b>Shuffle</b> jumps somewhere else entirely. Pick a <b>colour</b> or <b>typeface</b>
-  to hold it constant while you judge the rest. Open any layout, then <b>Make this my resume</b>
-  to publish it — every preview is a live render, identical to what gets published.</p>
 </header>
 
-<div class="grid" id="grid"></div>
+<main class="wrap"><div class="grid" id="grid"></div></main>
 
 <dialog id="dlg">
   <div class="dlg-bar">
@@ -365,6 +386,7 @@ __TOPBAR__
   <iframe id="dlgFrame" title="preview"></iframe>
 </dialog>
 
+__FOOTER__
 <div class="toast" id="toast"></div>
 
 <script>
@@ -753,7 +775,12 @@ function popover(){
   }
 }
 
-function drawFilters(){ paletteBar($("#palette")); axisBar($("#axes")); popover(); }
+function drawFilters(){
+  // Without filtering both bars are hidden, so the row that holds them has to go
+  // too — otherwise it contributes an empty line's worth of gap to the bar.
+  $(".filters").hidden = !CAN_FILTER;
+  paletteBar($("#palette")); axisBar($("#axes")); popover();
+}
 
 // Close an open dropdown on a click elsewhere. The origin is recorded during
 // CAPTURE because redrawing detaches the very button that was clicked — by the

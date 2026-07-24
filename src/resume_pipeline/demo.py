@@ -107,14 +107,12 @@ __KIT__
   body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;
        line-height:1.6;-webkit-font-smoothing:antialiased}
 
-  .wrap{max-width:1120px;margin:0 auto;padding:34px 22px 90px}
+  /* `.wrap` (the page measure) and `.pill` (the eyebrow) come from the kit; this is
+     only the landing's own vertical rhythm, kept off `.wrap` itself so the nav's
+     inner wrap does not inherit a 90px foot. */
+  .page{padding-top:34px;padding-bottom:90px}
 
   .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;margin:20px 0 6px}
-  .pill{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.09em;
-        text-transform:uppercase;color:var(--mute);border:1px solid var(--line);
-        border-radius:var(--radius-pill);padding:5px 12px}
-  .pill b{width:6px;height:6px;border-radius:50%;background:var(--gold);
-          box-shadow:0 0 9px var(--gold)}
   h1{font-size:44px;line-height:1.06;font-weight:800;letter-spacing:-.02em;margin:18px 0 14px}
   .sub{color:var(--mute);font-size:16px;max-width:54ch;margin:0 0 24px}
   .sub b{color:var(--ink);font-weight:500}
@@ -156,9 +154,7 @@ __KIT__
   .c p{color:var(--mute);font-size:13.5px;margin:0}
   .c p b{color:var(--ink);font-weight:500}
 
-  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);
-         display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;color:var(--mute);font-size:12.5px}
-  footer .sep{opacity:.4}
+  .sitefoot{margin-top:56px}
 
   @media (max-width:860px){
     .hero{grid-template-columns:1fr;gap:30px}
@@ -167,7 +163,7 @@ __KIT__
   }
 </style></head><body>
 __NAV__
-<main class="wrap">
+<main class="wrap page">
   <section class="hero">
     <div>
       <span class="pill"><b></b>Live demo · sample profile</span>
@@ -211,12 +207,7 @@ __NAV__
     </div>
   </section>
 
-  <footer>
-    <span>Resume Pipeline</span><span class="sep">·</span>
-    <span>MIT licensed</span><span class="sep">·</span>
-    <a href="__REPO__">Source on GitHub</a><span class="sep">·</span>
-    <span>Early — this page is a demo of the layout browser; the full tool runs in your coding agent.</span>
-  </footer>
+__FOOTER__
 </main>
 <script>
   // Hero carousel: one large live render at a time, crossfading through the set.
@@ -282,10 +273,18 @@ _NAV_LANDING = (f'<a class="btn ghost" href="{REPO}">GitHub</a>'
 _NAV_BROWSE = (f'<a class="btn ghost" href="{REPO}">GitHub</a>'
                '<a class="btn ghost" href="./">Overview</a>')
 
+# The footer's trailing sentence, per page. Both say the same true thing about how
+# early this is; the browser's also points back to the front door.
+_FOOT_LANDING = ("Early — this page is a demo of the layout browser; the full tool "
+                 "runs in your coding agent.")
+_FOOT_BROWSE = ("Early — a live demo over a sample profile. "
+                '<a href="./">What this is</a>.')
+
 
 def landing(total: int, stage_names) -> str:
     return (_LANDING.replace("__KIT__", theme.TOKENS + theme.BASE)
                     .replace("__NAV__", theme.nav(_NAV_LANDING))
+                    .replace("__FOOTER__", theme.footer(_FOOT_LANDING))
                     .replace("__TOTAL__", f"{total:,}")
                     .replace("__REPO__", REPO)
                     .replace("__STAGE__", _stage(stage_names)))
@@ -309,7 +308,8 @@ def build(resume, out_dir: Path, count: int = 24) -> Path:
     (out_dir / "browse.html").write_text(
         viewer.page(space.spread(count), resume, preview="embed",
                     pages=space.pages(count), markups=data["markups"],
-                    css=data["css"], count=count, topbar=theme.nav(_NAV_BROWSE)),
+                    css=data["css"], count=count, topbar=theme.nav(_NAV_BROWSE),
+                    footer=theme.footer(_FOOT_BROWSE)),
         encoding="utf-8")
 
     # A curated, colourful trio for the hero, each a real render written beside the page.
