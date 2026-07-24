@@ -31,16 +31,23 @@ Use `docs/assets/demo-profile.json` (Jane Smith) as the fixture — never a real
 - **Grid** is `<div id="grid">` — **empty in the served HTML; JavaScript builds the cards.** So HTTP
   checks see nothing; you must render in a real browser to test it (`--dump-dom` counts cards, or
   drive it live). A full page is 24 cards.
-- **Header** is a two-column grid (`.hdr`, RP-0018): identity on the left (`h1`, `.statusline`,
-  controls on the right (`#pageMeta` + `.nav`, then the single `#filters` bar). **Below 900px the
-  grid collapses to one left-aligned column** — the control column is `auto` and cannot shrink, so
-  two columns starve each other and the title breaks across three lines. `#hintBtn` and its
-  `<p id="hint">` sit *below* the grid, shown on a first visit and hidden once dismissed.
-- **Filter bar** (`#filters`) — *one* bar for all seven axes, right-aligned (left-aligned below
-  900px). Order: the colour `.swgroup` (label `Color` + 7 `.sw` swatches, `harbor ink moss clay
-  plum slate crimson`, each `<button class="sw" title="moss">`), then the six dropdown pills,
-  then `.fpill.clearbtn` "Clear all" last. The `.swgroup` is one flex item on purpose so a wrap
-  cannot split the label from its swatches.
+- **Header** is a two-column grid (`.hdr`, RP-0018): identity on the left (`h1`, `.statusline`),
+  controls on the right (`#pageMeta` + `.nav`, then the two filter rows `#palette` and `#axes`).
+  **Below 900px the grid collapses to one left-aligned column** — the control column is `auto` and
+  cannot shrink, so two columns starve each other and the title breaks across three lines. `#hintBtn`
+  and its `<p id="hint">` sit *below* the grid, shown on a first visit and hidden once dismissed.
+  `.nav` is `flex-shrink:0` and `#pageMeta` is `min-width:0`, so the four `« ‹ Shuffle ›` controls
+  never wrap — the count text yields instead (RP-0043).
+- **Filter bar — two rows, one group (RP-0043, was one merged `#filters` bar in 171f20c).** Colour
+  keeps its own row `#palette` (a `.swgroup`: label `Color` + 7 `.sw` swatches, `harbor ink moss clay
+  plum slate crimson`, each `<button class="sw" title="moss">`), and the six dropdowns sit on the row
+  directly below it, `#axes` (also `.palette` class; takes `grid-column:2` so nothing lands in the
+  left gutter). They read as one group by adjacency and shared alignment — *not* by being concatenated
+  into one wrapping container, which interleaves swatches and pills the moment it wraps. Both are
+  right-aligned (left-aligned below 900px, where `#axes` drops to `grid-column:auto`). `.swgroup` is
+  one flex item on purpose so a wrap cannot split the colour label from its swatches; `balanceWrap`
+  runs on `#axes` only (the colour row is a single group). No per-colour Clear — swatches toggle
+  directly and `.fpill.clearbtn` "Clear all" (last in `#axes`) covers reset.
 - **Axis dropdowns**: six `.fpill` pills —
   `Type Header Skills Promo Density Group` — each `<button class="fpill" data-axis="header">`
   carrying a `.ct` count badge when constrained and a `.caret` otherwise. Clicking one opens
@@ -102,10 +109,10 @@ Re-verify each; expected result in parens. Add new rows as surface grows.
 | 6 | Viewer publish | deliverable + real PDF + sidecar records the picked layout + archive-on-overwrite | 2026-07-23 ✅ |
 | 7 | Typeface filter + compose | `Type ▾ charter` → all cards that face; `moss`+`charter` → "360 of 10,080 layouts", page 1 of 15; clear → back to 10,080/420 | 2026-07-23 ✅ (driven live) |
 | 8 | Counts follow the filter (RP-0035) | header total & page count recompute per hold; `/api/page` returns live `total` | 2026-07-23 ✅ (driven live + acceptance) |
-| 9 | Header holds its shape | with several axes filtered the `« ‹ Shuffle ›` nav stays on row 1; status is on its own line (`.statusline`) | 2026-07-23 ✅ (re-measured live at 1500 / 760 / 620px after the RP-0018 two-column rebuild) |
+| 9 | Header holds its shape | with several axes filtered the `« ‹ Shuffle ›` nav stays on row 1 (never wraps); colour (`#palette`) and dropdowns (`#axes`) are two stacked rows reading as one group, not one merged bar; below 900px both collapse to one left-aligned column | 2026-07-24 ✅ (RP-0043; measured live at 1400 / 950 / 700 / 500px — nav one line at every width, rows stacked and aligned, `#axes` grid-column auto below 900px) |
 | 10 | Explainer collapses and stays collapsed (RP-0018) | `#hintBtn` toggles `#hint` and flips its label between "What is this?" and "Hide"; the choice persists across a reload via `localStorage["resume-pipeline:hint-hidden"]` | 2026-07-23 ✅ (driven live) |
 | 11 | **Multi-select is an OR** (RP-0033) | two densities → total = 2/3 of the single-density set; the `Density` pill shows a `2` badge; both values appear in the grid | 2026-07-23 ✅ (driven live + acceptance) |
-| 12 | **A dropdown must not move the header** | opening any `#axes` pill leaves the header height unchanged — a popover is positioned, not laid out. Measured delta `0px` | 2026-07-23 ✅ (measured live) |
+| 12 | **A dropdown must not move the header** | opening any `#axes` pill leaves the header height unchanged — a popover is positioned, not laid out. Measured delta `0px` | 2026-07-24 ✅ (re-measured live after the RP-0043 two-row restore: header 161px, delta 0px) |
 | 13 | **Card chip filters** | click a card's `clay` chip → "1,440 of 10,080 layouts", the chip goes `.on`, `Clear all` enables | 2026-07-23 ✅ (driven live) |
 | 14 | **Clear all resets everything** | one click → 10,080, no `.on` chip or swatch anywhere, the button re-disables, header returns to its resting height | 2026-07-23 ✅ (driven live) |
 | 15 | **Degenerate filters behave** | selecting *every* value of an axis == no filter (10,080); an unknown value is ignored rather than yielding "0 layouts" | 2026-07-23 ✅ (acceptance) |

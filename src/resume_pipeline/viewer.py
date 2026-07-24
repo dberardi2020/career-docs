@@ -125,9 +125,12 @@ _PAGE = r"""<!doctype html>
   h1{font-size:15px;margin:0;letter-spacing:-.2px;font-weight:700}
   .meta{color:var(--muted);font-size:12.5px}
   .navwrap{display:flex;align-items:center;gap:14px;justify-self:end}
+  /* The count/holds text yields so the four nav controls never wrap (RP-0043,
+     regression-checklist row 9): pair min-width:0 here with flex-shrink:0 on .nav. */
+  #pageMeta{min-width:0}
   .hint{margin:8px 0 0;color:var(--muted);font-size:12.5px;max-width:82ch}
   .hint[hidden]{display:none}
-  .nav{display:flex;gap:6px;align-items:center}
+  .nav{display:flex;gap:6px;align-items:center;flex-shrink:0}
   .nav button{padding:5px 11px}
   /* A quiet, text-weight toggle — onboarding copy a returning user doesn't need. */
   /* Below the controls, next to the copy it toggles — beside the filter bar it
@@ -271,17 +274,20 @@ _PAGE = r"""<!doctype html>
      back to the grid behind it. Lock the page while the modal is up. */
   body.modal-open{overflow:hidden}
 
-  /* Colour bar. Palette is one axis but the one people react to first, so it is
-     lifted out of the chips into a control of its own: a swatch *is* the value,
-     which no label can improve on, so colour keeps swatches while every other
-     axis collapses into a dropdown (RP-0033). Selection is multi-select — two
-     swatches are an OR. */
-  .filters{display:flex;align-items:center;gap:8px;margin:0;flex-wrap:wrap;
+  /* Two rows, one group (RP-0043). Colour keeps its own row — a swatch *is* the
+     value, which no label improves on — and the six dropdowns sit on the row
+     directly below it. They read as one group by adjacency and shared alignment,
+     not by being concatenated into a single wrapping bar (which interleaves
+     swatches and pills the moment it wraps). Both are the right-column control;
+     #axes takes grid-column 2 so no phantom item lands in the left gutter.
+     Selection is multi-select throughout — two swatches are an OR. */
+  .palette{display:flex;align-items:center;gap:8px;margin:0;flex-wrap:wrap;
            justify-content:flex-end}
+  #axes{grid-column:2}
   /* Label + swatches move as one: a wrap that split them would read as two
      controls, and balanceWrap counts children, so this must be a single item. */
   .swgroup{display:inline-flex;align-items:center;gap:7px}
-  .filters .lbl{font-size:12px;color:var(--muted)}
+  .palette .lbl{font-size:12px;color:var(--muted)}
 
   .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
          background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;
@@ -298,7 +304,10 @@ _PAGE = r"""<!doctype html>
   @media (max-width:900px){
     .hdr{grid-template-columns:1fr;gap:9px}
     .navwrap{justify-self:start}
-    .filters{justify-content:flex-start}
+    .palette{justify-content:flex-start}
+    /* One column: #axes drops its explicit column-2 placement, else it would
+       spawn a phantom second column and the rows would not stack. */
+    #axes{grid-column:auto}
     h1{font-size:16px}
   }
 </style></head><body>
@@ -320,9 +329,11 @@ _PAGE = r"""<!doctype html>
     </span>
 
     <div class="meta statusline" id="meta"></div>
-    <!-- Colour is not a separate system from the other axes — it just wears
-         swatches instead of a dropdown, so it sits in the same bar. -->
-    <div class="filters" id="filters"></div>
+    <!-- Two rows that read as one group (RP-0043): colour swatches on top, the
+         six dropdowns directly below. Kept as separate containers so a wrap can
+         never interleave swatches with pills. -->
+    <div class="palette" id="palette"></div>
+    <div class="palette" id="axes"></div>
   </div>
   <div class="pop" id="pop" hidden></div>
   <button class="hintbtn" id="hintBtn" aria-expanded="true" aria-controls="hint">What is this?</button>
@@ -598,17 +609,14 @@ function clearBtn(axis, cls){
   return b;
 }
 
-// One bar, every axis. Colour is not a separate system — it just wears swatches
-// rather than a dropdown, because a swatch *is* the value and no label beats it.
-// The other six are words either way, so they collapse into dropdowns whose count
-// badge keeps the header from growing with the size of the selection.
-function filterBar(el){
+// Colour keeps its own row and its own chrome: a swatch *is* the value, which no
+// label beats. Label and swatches travel as one flex item (`.swgroup`) so a wrap
+// can never split them — which is also why this row needs no balanceWrap.
+function paletteBar(el){
   if(!CAN_FILTER){ el.hidden = true; return; }
   el.textContent = "";
 
   const palette = AXES.find(a => a.key === "palette");
-  // Label and swatches travel as one item: a wrap that split them would read as
-  // two controls, and balanceWrap counts children.
   const group = document.createElement("span"); group.className = "swgroup";
   const lbl = document.createElement("span"); lbl.className = "lbl";
   lbl.textContent = palette.label;
@@ -623,6 +631,14 @@ function filterBar(el){
     group.append(b);
   });
   el.append(group);
+}
+
+// The other six axes are words either way, so they collapse into dropdowns on the
+// row directly below colour: a fixed number of pills carrying a count, which keeps
+// the header from growing with the size of the selection.
+function axisBar(el){
+  if(!CAN_FILTER){ el.hidden = true; return; }
+  el.textContent = "";
 
   AXES.filter(a => a.key !== "palette").forEach(axis => {
     const n = FILTERS[axis.key].size, live = OPEN_AXIS === axis.key;
@@ -668,7 +684,7 @@ function popover(){
     vals.append(b);
   });
   pop.append(head, vals);
-  const btn = $("#filters").querySelector(`[data-axis="${axis.key}"]`);
+  const btn = $("#axes").querySelector(`[data-axis="${axis.key}"]`);
   if(btn){
     const hd = $("header").getBoundingClientRect(), r = btn.getBoundingClientRect();
     pop.style.top = (r.bottom - hd.top + 8) + "px";
@@ -677,20 +693,20 @@ function popover(){
   }
 }
 
-function drawFilters(){ filterBar($("#filters")); popover(); }
+function drawFilters(){ paletteBar($("#palette")); axisBar($("#axes")); popover(); }
 
 // Close an open dropdown on a click elsewhere. The origin is recorded during
 // CAPTURE because redrawing detaches the very button that was clicked — by the
 // bubble phase "was this inside?" would answer no, closing what just opened.
 let clickInside = false;
 document.addEventListener("click", e => {
-  clickInside = $("#filters").contains(e.target) || $("#pop").contains(e.target);
+  clickInside = $("#palette").contains(e.target) || $("#axes").contains(e.target) || $("#pop").contains(e.target);
 }, true);
 document.addEventListener("click", () => {
   if(OPEN_AXIS && !clickInside){ OPEN_AXIS = null; popover(); }
 });
 window.addEventListener("resize", () => {
-  balanceWrap($("#filters")); popover();
+  balanceWrap($("#axes")); popover();
 });
 
 function open(v){

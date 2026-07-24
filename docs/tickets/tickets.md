@@ -16,7 +16,6 @@ The committed next few, in intended order.
 
 | ID | Pri | Type | Title |
 |---|---|---|---|
-| [RP-0043](#rp-0043) | P1 | Bug | Filter bar regressions — one merged row, and the nav wraps |
 | [RP-0038](#rp-0038) | P1 | Feature | A hosted GitHub Pages demo — fixture data, click-around, no backend |
 | [RP-0032](#rp-0032) | P1 | Feature | Lead with a small, diverse set — the full space overwhelms |
 
@@ -66,6 +65,7 @@ living numbers are in the docs.*
 
 | ID | Title | Closed |
 |---|---|---|
+| RP-0043 | **Filter bar back to two rows; the pager no longer wraps.** `171f20c` had merged colour and the six dropdowns into one `#filters` bar that interleaved swatches and pills the moment it wrapped, and let `« ‹ Shuffle ›` break across lines. Both were regressions against `f8bd48f`, and the fix diffs against it rather than redesigning: colour keeps its own row (`#palette`), the six dropdowns sit on the row directly below (`#axes`, `grid-column:2` so nothing lands in the left gutter), and the two read as one *group* by adjacency and shared alignment — not by being concatenated. Kept from the merged version what was right: the `.swgroup` (label + swatches as one flex item, so a wrap can't split them), `balanceWrap` on the dropdown row only, the <900px single-column collapse (where `#axes` drops to `grid-column:auto`), and "What is this?" below the controls. The pager holds its line via `.nav{flex-shrink:0}` paired with `#pageMeta{min-width:0}` — the count text yields instead. Dropped the per-colour Clear for good: swatches toggle visibly and `Clear all` sits one row below, so a third reset earned nothing. `Color`/`colour` stays mixed (UI American, prose British) pending a repo-wide call. Verified live at 1400 / 950 / 700 / 500px — nav one line at every width, popover still moves the header 0px. 215 unit / 38 acceptance. | 2026-07-24 |
 | RP-0033 | **Every axis is a multi-select filter.** An axis now holds a *set*: empty is unconstrained, several values are an OR, and axes combine with AND — so a "hold" is just a selection of one, which generalises RP-0037 rather than replacing it. Driven from the header (a colour swatch bar, plus a dropdown per remaining axis, each carrying a count badge) **or by clicking any chip on a card** — the real "more like this one" gesture. `space.matches` accepts a list per axis, `/api/page` takes repeated params (`?palette=moss&palette=plum`), and the vestigial `pin()` name-rewriting from the overlay era is gone. Chrome decisions: **colour keeps swatches** (a swatch *is* the value); everything else is a dropdown, because they are words either way. **A popover, not a panel** — opening one moves the header **0px**, measured. One verb for reset (`Clear` per axis, `Clear all`), always present but disabled, so the row never shifts. Pill rows **wrap evenly** (7 items go 4+3, then 3+2+2) since flex wraps greedily. Header costs +14px at rest (115→129). 215 unit tests, 38 acceptance checks. | 2026-07-23 |
 | RP-0035 | **Counts follow the filtered set.** The header total and page count were derived from the full enumeration (`space.TOTAL`, 10,080 / 420 pages) and so were static under a hold. Now `space.total(filters)`/`space.pages(count, filters)` compute over the filtered subset, `/api/page` returns the live `total`, and the viewer updates both as holds change — "1,440 layouts · holding moss · page 1 of 60", back to 10,080 / 420 on release. Landed with the RP-0033 hold-as-filter slice. Unit-tested in `test_space.py`; acceptance asserts the HTTP total/pages drop under a hold. | 2026-07-23 |
 | RP-0037 | **Typeface hold — the colour pin's twin.** A second always-on "hold this axis" bar (`#typeface`) mirroring the colour bar, on the second name segment. Typeface is a closed four-value axis, so no font picker is needed: four `.tf` **sample chips** (`grotesk humanist charter mixed`), each rendered *in its own face*, plus "Varied". Clicking one swaps the typeface segment of every card's spec and re-renders in place; the pin **persists across paging** and **composes with the colour pin**; the detail dialog carries the same bar. Colour and typeface now share one `pin()` that swaps name segments 0/1 (was `recolor`; `CAN_RECOLOR`→`CAN_PIN`). Covered by two unit tests (offers-every-typeface, typeface-segment-swap) and a real-browser dump-DOM acceptance check; live click-through driven in-browser (charter re-typed the grid, moss+charter composed and held across paging). | 2026-07-23 |
@@ -243,29 +243,6 @@ Open questions it inherits: whether grouping is a *view* over the current filter
 **P3 · Feature · viewer**
 
 The grid is fixed at 24 live renders per page (`serve(…, count=24)`); let the user pick — e.g. 12 / 24 / 48 — from the viewer. Trade-off to surface: each card is a live iframe render, so more per page means more to render and scroll (24 was chosen as the balance). Self-contained — the page count already follows `count` (`space.pages(count)`). Interacts only with RP-0032 (the diverse default set).
-
-### RP-0043 — Filter bar regressions {#rp-0043}
-**P1 · Bug · viewer**
-
-Two misses introduced by `171f20c` ("one filter bar, Color, explainer below the controls"). Both were visible immediately in the browser and are **regressions against the state at `f8bd48f`**, which was better. Everything needed to fix them is written down here.
-
-**1. The filter bar should be two rows, not one flowing bar.** The feedback was that the filters "should not be separate from the Color" — that meant they should read as **one group**, not that they should be merged into a single wrapping row. The intended shape is:
-
-```
-row  Color   ● ● ● ● ● ● ●
-row  Type ▾  Header ▾  Skills ▾  Promo ▾  Density ▾  Group ▾   ✕ Clear all
-row  What is this?
-```
-
-Colour keeps its own row; the six dropdowns keep theirs; the two read as one group by sitting adjacent and sharing alignment, **not** by being concatenated into one `#filters` flex container. `171f20c` collapsed them into one bar, which at any width narrow enough to wrap interleaves swatches and pills across rows and looks worse than what it replaced. "What is this?" moving below the controls was correct and should stay.
-
-**Mechanically:** restore the two containers (`#palette` and `#axes` at `f8bd48f`, or two children of a shared wrapper), keep the `.swgroup` idea so a wrap can never split the label from its swatches, and keep `balanceWrap` on the dropdown row. The single-column media query below 900px still applies to both.
-
-**2. The pager must never wrap.** `« ‹ Shuffle ›` now breaks across lines at narrow widths; it did not before. `.nav` needs `flex-shrink:0` (and the row that holds it must let it keep its width) so the four controls stay on one line at every width — the same invariant RP-0018 established when the status text was moved to its own line, now broken from the other direction. Regression-checklist row 9 covers exactly this and must be re-verified.
-
-**Also open (deliberately deferred, not forgotten):** `171f20c` removed the colour-specific `Clear`, on the reasoning that swatches toggle directly and `Clear all` sits nearby. With colour back on its own row that reasoning weakens — decide whether it returns.
-
-**Not a regression, but decided here:** the UI says `Color` while the docs and comments say "colour". The repo is written in British English throughout, so a repo-wide sweep is its own call; the mixed state is intentional until then.
 
 ### RP-0038 — A hosted GitHub Pages demo {#rp-0038}
 **P1 · Feature · hosting**
