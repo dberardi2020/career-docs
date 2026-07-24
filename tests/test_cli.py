@@ -7,7 +7,7 @@ import pytest
 
 from resume_pipeline import cli, compose
 
-COMMANDS = {"lint", "catalogue", "serve", "publish", "init"}
+COMMANDS = {"lint", "catalogue", "demo", "serve", "publish", "init"}
 
 
 def test_the_command_surface_is_exactly_this(monkeypatch):

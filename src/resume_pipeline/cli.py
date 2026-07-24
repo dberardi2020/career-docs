@@ -19,7 +19,7 @@ import os
 import sys
 from pathlib import Path
 
-from . import catalogue, compose, deliverable, scaffold, space
+from . import catalogue, compose, deliverable, demo, scaffold, space
 from . import lint as lint_mod
 from . import markdown, model, pdf
 
@@ -147,6 +147,20 @@ def cmd_catalogue(args) -> int:
     return 0
 
 
+def cmd_demo(args) -> int:
+    """Build the hosted static demo: a landing page + the whole-space browser, no
+    backend. Everything is rebuilt in the visitor's browser from baked tables."""
+    args.resume = str(find_resume(args.resume))
+    resume = _load(args.resume)
+    out_dir = Path(args.out) if args.out else cache_dir(Path(args.resume)) / "site"
+    index = demo.build(resume, out_dir, count=args.count)
+    print(f"built the demo site ({space.TOTAL:,} layouts, browsable client-side)")
+    print(f"  landing: {index}")
+    print(f"  browser: {index.parent / 'browse.html'}")
+    print(f"\nserve locally with: python -m http.server -d {out_dir}")
+    return 0
+
+
 def cmd_serve(args) -> int:
     from .server import serve
     resume_path = find_resume(args.resume)
@@ -239,6 +253,14 @@ def build_parser() -> argparse.ArgumentParser:
                    help="how many layouts to generate (default: 20)")
     p.add_argument("--out", help="output directory (default: cache)")
     p.set_defaults(func=cmd_catalogue)
+
+    p = sub.add_parser("demo",
+                       help="build the hosted static demo (landing + whole-space browser)")
+    p.add_argument("resume", nargs="?")
+    p.add_argument("--count", type=int, default=24,
+                   help="layouts per page in the browser (default: 24)")
+    p.add_argument("--out", help="output directory (default: cache/site)")
+    p.set_defaults(func=cmd_demo)
 
     p = sub.add_parser("serve", help="browse layouts in a local viewer")
     p.add_argument("resume", nargs="?")

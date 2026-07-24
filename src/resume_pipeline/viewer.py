@@ -44,11 +44,17 @@ def describe(spec: compose.Spec) -> dict:
 
 
 def page(specs, resume, *, preview: str = "file", exportable: bool = False,
-         pages: int = 0) -> str:
+         pages: int = 0, markups: dict | None = None, css: dict | None = None,
+         count: int = 24) -> str:
     """Render the viewer.
 
-    `preview` is "file" (previews sit beside the page as `<name>.html`) or "route"
-    (previews come from `/preview/<name>` on a running server).
+    `preview` is one of:
+    - "file"  — previews sit beside the page as `<name>.html` (static catalogue);
+    - "route" — previews come from `/preview/<name>` on a running server;
+    - "embed" — no server: the whole space is enumerated, filtered and paged in the
+                browser, and every preview is rebuilt from the baked `markups`/`css`
+                tables (the hosted demo, RP-0038). `markups`/`css` come from
+                `demo.bake`; `count` is the page size.
     """
     options = [describe(s) for s in specs]
     title = html.escape(resume.name or "Resume")
@@ -78,13 +84,17 @@ def page(specs, resume, *, preview: str = "file", exportable: bool = False,
         axes_meta.append(entry)
     return _PAGE.replace("__PAGES__", str(pages)) \
                 .replace("__AXES__", json.dumps(axes_meta)) \
+                .replace("__TITLE_JS__", json.dumps(title)) \
                 .replace("__TITLE__", title) \
                 .replace("__TOTAL__", f"{space.TOTAL:,}") \
                 .replace("__TOTAL_N__", str(space.TOTAL)) \
                 .replace("__PREVIEW__", preview) \
                 .replace("__EXPORTABLE__", "true" if exportable else "false") \
+                .replace("__COUNT__", str(count)) \
                 .replace("__PALETTES__", json.dumps(palettes)) \
                 .replace("__TYPEFACES__", json.dumps(typefaces)) \
+                .replace("__MARKUPS__", json.dumps(markups) if markups else "null") \
+                .replace("__CSS__", json.dumps(css) if css else "null") \
                 .replace("__OPTIONS__", json.dumps(options))
 
 
@@ -341,11 +351,11 @@ _PAGE = r"""<!doctype html>
     <!-- The explainer toggle sits in the left gutter on the dropdown row (the
          hero-shot layout) rather than a line of its own; below 900px it drops
          below both filter rows (order:1) instead of wedging between them. -->
-    <button class="hintbtn" id="hintBtn" aria-expanded="true" aria-controls="hint">What is this?</button>
+    <button class="hintbtn" id="hintBtn" aria-expanded="false" aria-controls="hint">What is this?</button>
     <div class="palette" id="axes"></div>
   </div>
   <div class="pop" id="pop" hidden></div>
-  <p class="hint" id="hint">Layouts are <b>generated</b>, not templates — each is one combination of
+  <p class="hint" id="hint" hidden>Layouts are <b>generated</b>, not templates — each is one combination of
   seven independent choices, so there are __TOTAL__ of them. The arrows walk the space in
   order; <b>Shuffle</b> jumps somewhere else entirely. Pick a <b>colour</b> or <b>typeface</b>
   to hold it constant while you judge the rest. Open any layout, then <b>Make this my resume</b>
@@ -397,8 +407,58 @@ const previewUrl = name =>
 
 // Filtering narrows the browse server-side, so it needs a server to page the
 // subset. The static catalogue is a fixed sample already written to disk, so the
-// controls are absent there rather than present and inert.
-const CAN_FILTER = PREVIEW === "route";
+// controls are absent there rather than present and inert. The embedded demo
+// (RP-0038) is the third case: no server, but the whole space is browsable and
+// filterable *client-side* — paging is array maths and every preview is rebuilt
+// in the browser from the baked markup/CSS tables.
+const EMBED = PREVIEW === "embed";
+const CAN_FILTER = PREVIEW === "route" || EMBED;
+
+// ── Embedded demo: the whole space, no backend ─────────────────────────────
+// MARKUPS[header|skills|promo|grouping] -> <body> HTML   (120)
+// CSSTAB [palette|typeface|density|band] -> <style> CSS  (168)
+// Proven to reassemble render(spec) exactly for all 10,080 specs (see demo.py),
+// so this is the one renderer's output, not a second renderer.
+const MARKUPS = __MARKUPS__;
+const CSSTAB  = __CSS__;
+const DEMO_TITLE = __TITLE_JS__;
+const COUNT = __COUNT__;                       // layouts per page
+const _AXORDER = ["palette","typeface","header","skills","promo","density","grouping"];
+const PIDX = EMBED ? Object.fromEntries(PALETTES.map((p,i)=>[p.name,i])) : null;
+const TIDX = EMBED ? Object.fromEntries(TYPEFACES.map((t,i)=>[t.name,i])) : null;
+const DIDX = EMBED ? Object.fromEntries(AXES.find(a=>a.key==="density").values.map((v,i)=>[v,i])) : null;
+
+let SPACE = [];   // every spec, in a stable, well-mixed order
+function _fnv(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function buildSpace(){
+  const vals = Object.fromEntries(AXES.map(a=>[a.key, a.values]));
+  let combos = [{}];
+  for(const k of _AXORDER){ const nx=[]; for(const c of combos) for(const v of vals[k]) nx.push({...c,[k]:v}); combos=nx; }
+  SPACE = combos.map(ax => ({name:_AXORDER.map(k=>ax[k]).join("-"), axes:ax}));
+  // Enumeration groups near-identical layouts; mix by a hash of the name so a page
+  // shows range, not seven shades of one design. Deterministic: page 3 is page 3.
+  SPACE.sort((a,b)=>_fnv(a.name)-_fnv(b.name));
+}
+function _matchesEmbed(axes){ return AXES.every(a=>{ const s=FILTERS[a.key]; return !s.size || s.has(axes[a.key]); }); }
+function _describe(ax){ return `${ax.palette} · ${ax.typeface} · ${ax.header} header · ${ax.skills} skills · ${ax.promo} promo · ${ax.density} · ${ax.grouping}`; }
+function embedPage(index){
+  const pool = ACTIVE() ? SPACE.filter(s=>_matchesEmbed(s.axes)) : SPACE;
+  const total = pool.length;
+  const pages = Math.max(1, Math.ceil(total / COUNT));
+  const i = ((index % pages) + pages) % pages;
+  const options = pool.slice(i*COUNT, i*COUNT + COUNT)
+                      .map(s => ({name:s.name, axes:s.axes, description:_describe(s.axes)}));
+  return {options, index:i, pages, total};
+}
+// Rebuild a preview from the baked tables — the HTML render() would have produced,
+// assembled in the browser instead of fetched from /preview.
+function previewDoc(ax){
+  const mk = [ax.header, ax.skills, ax.promo, ax.grouping].join("|");
+  const ck = [PIDX[ax.palette], TIDX[ax.typeface], DIDX[ax.density], ax.header==="band"?"1":"0"].join("|");
+  return '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><title>'
+       + DEMO_TITLE + ' - Resume</title><style>' + CSSTAB[ck] + '</style></head><body>'
+       + MARKUPS[mk] + '</body></html>';
+}
 
 // Flex wraps greedily — it packs the first line and drops the remainder, so six
 // pills break 5+1. There is no CSS for balanced wrapping, so measure and insert
@@ -457,8 +517,9 @@ function fitShot(frame){
 let cursor = 0;
 let CURRENT = null;   // the spec currently open in the dialog
 
-// The explainer is for a first visit. It's the tallest thing in the header and pure
-// onboarding, so once dismissed it stays dismissed and the grid starts that much higher.
+// The explainer is pure onboarding and the tallest thing in the header, so it starts
+// *minimised* — one quiet "What is this?" link — and only opens if asked. The choice
+// then persists either way, so a reader who opened it keeps it open.
 const HINT_KEY = "resume-pipeline:hint-hidden";
 function setHint(hidden){
   $("#hint").hidden = hidden;
@@ -466,7 +527,8 @@ function setHint(hidden){
   b.textContent = hidden ? "What is this?" : "Hide";
   b.setAttribute("aria-expanded", String(!hidden));
 }
-try{ setHint(localStorage.getItem(HINT_KEY) === "1"); }catch(e){ setHint(false); }
+// Hidden by default: shown only if the reader explicitly opened it before ("0").
+try{ setHint(localStorage.getItem(HINT_KEY) !== "0"); }catch(e){ setHint(true); }
 $("#hintBtn").addEventListener("click", () => {
   const hidden = !$("#hint").hidden;
   setHint(hidden);
@@ -478,7 +540,7 @@ function render(){
   // The count follows the filters: narrow an axis and "10,080 layouts" becomes the
   // size of that subset. The controls already say *what* is filtered, so repeating
   // it here would be redundant — this says only how much (RP-0033/0035).
-  if(PREVIEW === "route"){
+  if(PREVIEW === "route" || EMBED){
     $("#meta").textContent = ACTIVE()
       ? `${TOTAL.toLocaleString()} of ${SPACE_TOTAL.toLocaleString()} layouts`
       : `${TOTAL.toLocaleString()} layout${TOTAL===1?"":"s"}`;
@@ -497,7 +559,7 @@ function render(){
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <div class="shot"><iframe loading="lazy" src="${previewUrl(name)}"
+      <div class="shot"><iframe loading="lazy"
            title="${name}" scrolling="no"></iframe><div class="veil"></div></div>
       <div class="info">
         <div class="chips">${Object.entries(axes).map(([ax, val]) =>
@@ -511,6 +573,7 @@ function render(){
         </div>
       </div>`;
     const frame = card.querySelector("iframe");
+    if(EMBED) frame.srcdoc = previewDoc(axes); else frame.src = previewUrl(name);
     frame.addEventListener("load", ()=>fitShot(frame));
     new ResizeObserver(()=>fitShot(frame)).observe(card.querySelector(".shot"));
     card.querySelector(".shot").onclick = ()=>{ cursor=i; open(v); };
@@ -726,7 +789,7 @@ function open(v){
   const name = v.name;
   $("#dlgName").textContent = name;
   $("#dlgDesc").textContent = v.description;
-  $("#dlgFrame").src = previewUrl(name);
+  if(EMBED) $("#dlgFrame").srcdoc = previewDoc(v.axes); else $("#dlgFrame").src = previewUrl(name);
   $("#dlgCopy").onclick = ()=>copy(name);
 
   const post = (path, body) => fetch(path, {
@@ -768,6 +831,12 @@ function filterQuery(){
 }
 
 async function goto(index){
+  if(EMBED){                       // no server: compute the page from the baked space
+    const r = embedPage(index);
+    OPTIONS = r.options; PAGE_INDEX = r.index; PAGES = r.pages; TOTAL = r.total; cursor = 0;
+    OPEN_AXIS = null; render(); scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
   const nav = $("#nav"); nav.style.opacity = ".5";
   const r = await fetch("/api/page?i=" + index + filterQuery()).then(r=>r.json())
                   .catch(e=>({error:String(e)}));
@@ -799,7 +868,7 @@ addEventListener("keydown", e => {
   else if(PAGES>1&&(e.key==="["||e.key==="p")){ goto(PAGE_INDEX-1+PAGES); }
 });
 
-render();
+if(EMBED){ buildSpace(); goto(0); } else { render(); }
 </script>
 </body></html>
 """
