@@ -132,10 +132,12 @@ _PAGE = r"""<!doctype html>
   .hint[hidden]{display:none}
   .nav{display:flex;gap:6px;align-items:center;flex-shrink:0}
   .nav button{padding:5px 11px}
-  /* A quiet, text-weight toggle — onboarding copy a returning user doesn't need. */
-  /* Below the controls, next to the copy it toggles — beside the filter bar it
-     read as another control competing with them. */
-  .hintbtn{display:block;margin-top:11px;padding:2px 0;background:none;border:0;
+  /* A quiet, text-weight toggle — onboarding copy a returning user doesn't need.
+     Lives in the header's left gutter on the dropdown row (the hero-shot layout),
+     so it costs no line of its own; `justify-self:start` keeps it left, and the
+     grid's `align-items:center` lines it up with the dropdowns across the gutter.
+     Below 900px it drops below both filter rows (see the media query). */
+  .hintbtn{justify-self:start;padding:2px 0;background:none;border:0;
            color:var(--muted);font-size:12.5px;text-decoration:underline;
            text-underline-offset:3px;cursor:pointer}
   .hintbtn:hover{color:var(--accent)}
@@ -306,8 +308,11 @@ _PAGE = r"""<!doctype html>
     .navwrap{justify-self:start}
     .palette{justify-content:flex-start}
     /* One column: #axes drops its explicit column-2 placement, else it would
-       spawn a phantom second column and the rows would not stack. */
+       spawn a phantom second column and the rows would not stack. And the
+       explainer toggle drops below both filter rows (order:1) rather than
+       wedging between colour and the dropdowns. */
     #axes{grid-column:auto}
+    .hintbtn{order:1}
     h1{font-size:16px}
   }
 </style></head><body>
@@ -333,10 +338,13 @@ _PAGE = r"""<!doctype html>
          six dropdowns directly below. Kept as separate containers so a wrap can
          never interleave swatches with pills. -->
     <div class="palette" id="palette"></div>
+    <!-- The explainer toggle sits in the left gutter on the dropdown row (the
+         hero-shot layout) rather than a line of its own; below 900px it drops
+         below both filter rows (order:1) instead of wedging between them. -->
+    <button class="hintbtn" id="hintBtn" aria-expanded="true" aria-controls="hint">What is this?</button>
     <div class="palette" id="axes"></div>
   </div>
   <div class="pop" id="pop" hidden></div>
-  <button class="hintbtn" id="hintBtn" aria-expanded="true" aria-controls="hint">What is this?</button>
   <p class="hint" id="hint">Layouts are <b>generated</b>, not templates — each is one combination of
   seven independent choices, so there are __TOTAL__ of them. The arrows walk the space in
   order; <b>Shuffle</b> jumps somewhere else entirely. Pick a <b>colour</b> or <b>typeface</b>

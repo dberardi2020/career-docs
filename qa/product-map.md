@@ -31,13 +31,16 @@ Use `docs/assets/demo-profile.json` (Jane Smith) as the fixture — never a real
 - **Grid** is `<div id="grid">` — **empty in the served HTML; JavaScript builds the cards.** So HTTP
   checks see nothing; you must render in a real browser to test it (`--dump-dom` counts cards, or
   drive it live). A full page is 24 cards.
-- **Header** is a two-column grid (`.hdr`, RP-0018): identity on the left (`h1`, `.statusline`),
-  controls on the right (`#pageMeta` + `.nav`, then the two filter rows `#palette` and `#axes`).
-  **Below 900px the grid collapses to one left-aligned column** — the control column is `auto` and
-  cannot shrink, so two columns starve each other and the title breaks across three lines. `#hintBtn`
-  and its `<p id="hint">` sit *below* the grid, shown on a first visit and hidden once dismissed.
-  `.nav` is `flex-shrink:0` and `#pageMeta` is `min-width:0`, so the four `« ‹ Shuffle ›` controls
-  never wrap — the count text yields instead (RP-0043).
+- **Header** is a two-column grid (`.hdr`, RP-0018): identity on the left (`h1`, `.statusline`,
+  and `#hintBtn` in the left gutter on the dropdown row), controls on the right (`#pageMeta` + `.nav`,
+  then the two filter rows `#palette` and `#axes`). `#hintBtn` ("What is this?") sits in the gutter
+  aligned with `#axes` (the hero-shot layout, restored) — its `<p id="hint">` explainer still renders
+  *below* the grid, shown on a first visit and hidden once dismissed. **Below 900px the grid collapses
+  to one left-aligned column** — the control column is `auto` and cannot shrink, so two columns starve
+  each other and the title breaks across three lines; there `#hintBtn` takes `order:1` so it drops
+  *below* both filter rows instead of wedging between colour and the dropdowns. `.nav` is `flex-shrink:0`
+  and `#pageMeta` is `min-width:0`, so the four `« ‹ Shuffle ›` controls never wrap — the count text
+  yields instead (RP-0043).
 - **Filter bar — two rows, one group (RP-0043, was one merged `#filters` bar in 171f20c).** Colour
   keeps its own row `#palette` (a `.swgroup`: label `Color` + 7 `.sw` swatches, `harbor ink moss clay
   plum slate crimson`, each `<button class="sw" title="moss">`), and the six dropdowns sit on the row
@@ -81,6 +84,23 @@ Use `docs/assets/demo-profile.json` (Jane Smith) as the fixture — never a real
   guess lands in the gap and silently no-ops. Use `javascript_tool`:
   `[...document.querySelectorAll('#palette .sw')].map(e=>{const r=e.getBoundingClientRect();return{p:e.title,cx:Math.round(r.x+r.width/2),cy:Math.round(r.y+r.height/2)}})`
   then click those centres. (Screenshot coords are CSS px; `innerWidth` was 704, `dpr` 2.)
+- **Responsive: always test a full window AND a half window — derive both at runtime, never a
+  hardcoded width.** Do *not* trust the size the window launched at (it's arbitrary), and do *not*
+  bake in a pixel number — a fixed "half screen" is wrong on any other display. Ask the page for its
+  own screen and resize relative to it, so the check is identical on a laptop or a 5K monitor:
+  `JSON.stringify({availW:screen.availWidth, availH:screen.availHeight})`, then
+  - **Full window:** `resize_window` to `availW × availH`.
+  - **Half window:** `resize_window` to `round(availW/2) × availH`.
+
+  The header's one breakpoint is **900px** — a constant in the CSS (`@media (max-width:900px)`):
+  ≥900 is two-column right-aligned, <900 is one left-aligned column. *Which* layout a full or half
+  window lands in therefore depends on the machine, which is the whole reason to derive rather than
+  guess. Also spot-check the breakpoint edges directly (**901 and 899**) since 900 is fixed in the
+  code, not per-machine. At every width, assert from the DOM (not by eye): `#nav` on one line (all
+  four buttons share a `y`), `#palette` above `#axes`, `#hintBtn` last in vertical order when
+  single-column, and `document.documentElement.scrollWidth <= innerWidth` (no horizontal overflow).
+  *(Hardcoding a width cost a redo on 2026-07-24 — a "half screen" eyeballed at 940 was really
+  `availW/2 = 704` on that machine.)*
 - **Verify publish by the filesystem, at the dir the server actually serves** — not the toast, not
   the folder you *think* you served. Publish is server-side + a real ~2s PDF render.
 - **Turn on `read_network_requests` BEFORE the action** you want to capture — tracking starts on
@@ -118,6 +138,7 @@ Re-verify each; expected result in parens. Add new rows as surface grows.
 | 13 | **Card chip filters** | click a card's `clay` chip → "1,440 of 10,080 layouts", the chip goes `.on`, `Clear all` enables | 2026-07-23 ✅ (driven live) |
 | 14 | **Clear all resets everything** | one click → 10,080, no `.on` chip or swatch anywhere, the button re-disables, header returns to its resting height | 2026-07-23 ✅ (driven live) |
 | 15 | **Degenerate filters behave** | selecting *every* value of an axis == no filter (10,080); an unknown value is ignored rather than yielding "0 layouts" | 2026-07-23 ✅ (acceptance) |
+| 16 | **Full window AND half window both hold** (derive both, never hardcode) | resize to `availW×availH` (full) and `round(availW/2)×availH` (half), plus the breakpoint edges 901/899. At each: `#nav` on one line, `#palette` above `#axes`, `#hintBtn` last in vertical order when single-column (`order:1`), no horizontal overflow (`scrollWidth<=innerWidth`). Do **not** trust the launch size; do **not** bake in a pixel width | 2026-07-24 ✅ (RP-0043 follow-up; this run availW=1408 → full 1408px two-column, half 704px single-column 2-card grid; both sides of the breakpoint exercised at 940 (two-col) and 899 (one-col); all held, no overflow) |
 
 ## Teardown (always — a QA cleans up)
 
