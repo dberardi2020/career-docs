@@ -23,7 +23,7 @@ import html as _html
 import re
 from pathlib import Path
 
-from . import compose, space, viewer
+from . import compose, space, theme, viewer
 
 # render() emits a fixed skeleton; these lift the two spec-dependent spans out of it.
 _STYLE = re.compile(r"<style>(.*?)</style>", re.S)
@@ -73,7 +73,7 @@ def bake(resume) -> dict:
 
 # ── The hosted site ────────────────────────────────────────────────────────────
 
-REPO = "https://github.com/dberardi2020/resume-pipeline"
+REPO = theme.REPO
 
 # The hero carousel's five layouts. Curated, not `spread`d: the eye reads *palette*
 # first, so the five are chosen to vary colour, header treatment AND typeface on
@@ -100,67 +100,46 @@ _LANDING = r"""<!doctype html>
 <title>Resume Pipeline — a design space of __TOTAL__ resume layouts</title>
 <meta name="description" content="One structured profile becomes __TOTAL__ parse-safe resume layouts. Browse the whole space in your browser — no install, no account, nothing real behind it.">
 <style>
-  :root{
-    --bg:#0e1116; --panel:#161b22; --panel2:#1c222b; --line:#262d38; --line2:#333c4a;
-    --ink:#e7ebf1; --mute:#8b95a6; --accent:#63b3e0; --accent-ink:#0a0f15;
-    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 34px rgba(0,0,0,.4);
-  }
-  *{box-sizing:border-box}
+  /* Design kit (tokens + shared components: reset, links, brand, buttons, card,
+     site nav) — one source of truth in theme.py, shared with the browser page. */
+__KIT__
   html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);
-       font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-       -webkit-font-smoothing:antialiased}
-  a{color:var(--accent);text-decoration:none}
-  a:hover{text-decoration:underline}
-
-  .nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;
-       padding:12px 22px;border-bottom:1px solid var(--line);
-       background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(9px)}
-  .brand{font-weight:800;font-size:15.5px;letter-spacing:-.01em;color:var(--ink)}
-  .brand:hover{text-decoration:none}
-  .brand span{color:var(--accent)}
-  .navlinks{display:flex;gap:4px;margin-left:auto}
-  .navlinks a{font-size:13px;color:var(--mute);padding:6px 12px;border-radius:8px;
-              border:1px solid transparent;transition:.13s}
-  .navlinks a:hover{color:var(--ink);background:var(--panel2);text-decoration:none}
-  .navlinks a.cta{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:600}
-  .navlinks a.cta:hover{filter:brightness(1.07);color:var(--accent-ink)}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;
+       line-height:1.6;-webkit-font-smoothing:antialiased}
 
   .wrap{max-width:1120px;margin:0 auto;padding:34px 22px 90px}
 
   .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;margin:20px 0 6px}
   .pill{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.09em;
         text-transform:uppercase;color:var(--mute);border:1px solid var(--line);
-        border-radius:20px;padding:5px 12px}
-  .pill b{width:6px;height:6px;border-radius:50%;background:var(--accent);
-          box-shadow:0 0 9px var(--accent)}
+        border-radius:var(--radius-pill);padding:5px 12px}
+  .pill b{width:6px;height:6px;border-radius:50%;background:var(--gold);
+          box-shadow:0 0 9px var(--gold)}
   h1{font-size:44px;line-height:1.06;font-weight:800;letter-spacing:-.02em;margin:18px 0 14px}
   .sub{color:var(--mute);font-size:16px;max-width:54ch;margin:0 0 24px}
   .sub b{color:var(--ink);font-weight:500}
   .cta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
-  .btn{font-size:14.5px;font-weight:600;color:var(--ink);background:var(--panel2);
-       border:1px solid var(--line2);border-radius:10px;padding:12px 20px;cursor:pointer;transition:.13s}
-  .btn:hover{background:#242b35;border-color:#454e5d;text-decoration:none}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-  .btn.primary:hover{filter:brightness(1.07);color:var(--accent-ink)}
   .fine{font-size:12.5px;color:var(--mute);margin:2px 0 0}
 
   /* Hero stage: a carousel of live renders of the same profile, one large at a time,
      crossfading. Real output, not screenshots — the same thing the browser shows. */
   .stagewrap{display:flex;flex-direction:column;gap:13px}
   .stage{position:relative;aspect-ratio:816/620;background:#fff;border:1px solid var(--line);
-         border-radius:13px;overflow:hidden;box-shadow:var(--shadow)}
-  .slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;pointer-events:none}
-  .slide.on{opacity:1}
+         border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  /* A sliding track — one résumé at a time, sliding to the next. No crossfade, so
+     two text-dense pages never ghost through each other. */
+  .track{display:flex;height:100%;transition:transform .8s cubic-bezier(.4,0,.2,1);will-change:transform}
+  .slide{position:relative;flex:0 0 100%;height:100%;overflow:hidden}
   .slide iframe{position:absolute;top:0;left:0;width:816px;height:1056px;border:0;
                 transform-origin:top left;pointer-events:none}
+  @media (prefers-reduced-motion:reduce){ .track{transition:none} }
   .dots{display:flex;justify-content:center;gap:7px}
   .dot{width:7px;height:7px;padding:0;border:0;border-radius:50%;cursor:pointer;
        background:var(--line2);transition:.2s}
   .dot:hover{background:var(--mute)}
   .dot.on{background:var(--accent);width:22px;border-radius:4px}
   /* Manual advance: prev/next, revealed on hover (hovering also pauses auto-advance). */
-  .arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:36px;height:36px;
+  .arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:36px;height:36px;padding:0;
          border-radius:50%;border:1px solid var(--line2);color:var(--ink);cursor:pointer;
          background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);
          font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;
@@ -172,7 +151,7 @@ _LANDING = r"""<!doctype html>
   .strip{margin-top:58px;border-top:1px solid var(--line);padding-top:30px}
   .strip h2{font-size:13px;letter-spacing:.02em;color:var(--mute);font-weight:600;margin:0 0 18px;text-transform:none}
   .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  .c{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:20px 19px}
+  .c{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 19px}
   .c h3{font-size:16.5px;font-weight:700;margin:0 0 7px;letter-spacing:-.01em}
   .c p{color:var(--mute);font-size:13.5px;margin:0}
   .c p b{color:var(--ink);font-weight:500}
@@ -187,13 +166,7 @@ _LANDING = r"""<!doctype html>
     .cards{grid-template-columns:1fr}
   }
 </style></head><body>
-<nav class="nav">
-  <a class="brand" href="./">Resume<span>Pipeline</span></a>
-  <div class="navlinks">
-    <a href="__REPO__">GitHub</a>
-    <a class="cta" href="./browse.html">Browse the layouts →</a>
-  </div>
-</nav>
+__NAV__
 <main class="wrap">
   <section class="hero">
     <div>
@@ -203,14 +176,14 @@ _LANDING = r"""<!doctype html>
         Browse the whole space right here — hold a colour or typeface, page through, open any
         layout. <b>No install, no account</b>, nothing real behind it.</p>
       <div class="cta">
-        <a class="btn primary" href="./browse.html">Browse the layouts →</a>
-        <a class="btn" href="__REPO__">View the source</a>
+        <a class="btn primary lg" href="./browse.html">Browse the layouts →</a>
+        <a class="btn lg" href="__REPO__">View the source</a>
       </div>
       <p class="fine">A live demo over a sample profile (Jane Smith). The full tool — editing,
         linting and publishing — runs in your coding agent.</p>
     </div>
     <div class="stagewrap">
-      <div class="stage" id="stage">__STAGE__<button class="arrow prev" id="prev" aria-label="Previous layout">‹</button><button class="arrow next" id="next" aria-label="Next layout">›</button></div>
+      <div class="stage" id="stage"><div class="track" id="track">__STAGE__</div><button class="arrow prev" id="prev" aria-label="Previous layout">‹</button><button class="arrow next" id="next" aria-label="Next layout">›</button></div>
       <div class="dots" id="dots"></div>
     </div>
   </section>
@@ -251,8 +224,9 @@ _LANDING = r"""<!doctype html>
   // advance are the only chrome. Auto-advance pauses on hover and yields entirely to
   // prefers-reduced-motion.
   (function(){
-    const stage=document.getElementById("stage"); if(!stage) return;
-    const slides=[...stage.querySelectorAll(".slide")];
+    const stage=document.getElementById("stage"), track=document.getElementById("track");
+    if(!stage || !track) return;
+    const slides=[...track.children];
     const dotsBox=document.getElementById("dots");
     const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
     let i=0, timer=null;
@@ -267,13 +241,14 @@ _LANDING = r"""<!doctype html>
     const dots=[...dotsBox.children];
 
     function go(n){
-      slides[i].classList.remove("on"); dots[i].classList.remove("on");
+      dots[i].classList.remove("on");
       i=(n+slides.length)%slides.length;
-      slides[i].classList.add("on"); dots[i].classList.add("on");
+      track.style.transform="translateX("+(-i*100)+"%)";
+      dots[i].classList.add("on");
     }
     document.getElementById("prev").onclick=()=>{ go(i-1); restart(); };
     document.getElementById("next").onclick=()=>{ go(i+1); restart(); };
-    function restart(){ if(timer) clearInterval(timer); if(!reduce) timer=setInterval(()=>go(i+1), 3800); }
+    function restart(){ if(timer) clearInterval(timer); if(!reduce) timer=setInterval(()=>go(i+1), 5000); }
     function fit(){
       const s=stage.clientWidth/816;
       slides.forEach(sl=>{ const f=sl.querySelector("iframe"); if(f) f.style.transform="scale("+s+")"; });
@@ -291,17 +266,27 @@ _LANDING = r"""<!doctype html>
 
 def _stage(names) -> str:
     """The hero carousel's slides, each a scaled iframe pointing at a sibling render.
-    The first is visible; the script crossfades the rest."""
+    They sit in a flex track the script slides between."""
     return "".join(
-        f'<div class="slide{" on" if n == 0 else ""}">'
+        f'<div class="slide">'
         f'<iframe loading="lazy" scrolling="no" title="{_html.escape(name)}" src="{name}.html"></iframe>'
         f'</div>'
-        for n, name in enumerate(names)
+        for name in names
     )
 
 
+# The right-hand nav links differ per page. On the landing, a Browse CTA; on the
+# browser, just GitHub — the brand already links back to the front door.
+_NAV_LANDING = (f'<a class="btn ghost" href="{REPO}">GitHub</a>'
+                '<a class="btn primary" href="./browse.html">Browse the layouts →</a>')
+_NAV_BROWSE = (f'<a class="btn ghost" href="{REPO}">GitHub</a>'
+               '<a class="btn ghost" href="./">Overview</a>')
+
+
 def landing(total: int, stage_names) -> str:
-    return (_LANDING.replace("__TOTAL__", f"{total:,}")
+    return (_LANDING.replace("__KIT__", theme.TOKENS + theme.BASE)
+                    .replace("__NAV__", theme.nav(_NAV_LANDING))
+                    .replace("__TOTAL__", f"{total:,}")
                     .replace("__REPO__", REPO)
                     .replace("__STAGE__", _stage(stage_names)))
 
@@ -324,7 +309,7 @@ def build(resume, out_dir: Path, count: int = 24) -> Path:
     (out_dir / "browse.html").write_text(
         viewer.page(space.spread(count), resume, preview="embed",
                     pages=space.pages(count), markups=data["markups"],
-                    css=data["css"], count=count),
+                    css=data["css"], count=count, topbar=theme.nav(_NAV_BROWSE)),
         encoding="utf-8")
 
     # A curated, colourful trio for the hero, each a real render written beside the page.

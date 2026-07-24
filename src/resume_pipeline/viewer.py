@@ -18,7 +18,7 @@ from __future__ import annotations
 import html
 import json
 
-from . import compose, space
+from . import compose, space, theme
 
 
 def axes_of(spec: compose.Spec) -> dict[str, str]:
@@ -45,7 +45,7 @@ def describe(spec: compose.Spec) -> dict:
 
 def page(specs, resume, *, preview: str = "file", exportable: bool = False,
          pages: int = 0, markups: dict | None = None, css: dict | None = None,
-         count: int = 24) -> str:
+         count: int = 24, topbar: str = "") -> str:
     """Render the viewer.
 
     `preview` is one of:
@@ -82,7 +82,9 @@ def page(specs, resume, *, preview: str = "file", exportable: bool = False,
             entry["fonts"] = {t[0]: {"body": t[1], "display": t[2]}
                               for t in compose.TYPEFACES}
         axes_meta.append(entry)
-    return _PAGE.replace("__PAGES__", str(pages)) \
+    return _PAGE.replace("__KIT__", theme.TOKENS + theme.BASE) \
+                .replace("__TOPBAR__", topbar) \
+                .replace("__PAGES__", str(pages)) \
                 .replace("__AXES__", json.dumps(axes_meta)) \
                 .replace("__TITLE_JS__", json.dumps(title)) \
                 .replace("__TITLE__", title) \
@@ -106,26 +108,15 @@ _PAGE = r"""<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__TITLE__ — Layouts</title>
 <style>
-  :root{
-    --bg:#f2f4f7; --card:#fff; --ink:#12151a; --muted:#69707c; --line:#e0e4ea;
-    --accent:#0b6fa4;
-    /* Buttons need a surface of their own. Using --card put a card-coloured
-       button on a card-coloured panel, which in dark mode left only a faint
-       border to see — controls read as disabled, or vanished entirely. */
-    --btn:#f1f4f8; --btn-line:#c9d0da;
-    --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 12px rgba(16,24,40,.06);
-  }
-  @media (prefers-color-scheme:dark){
-    :root{ --bg:#0e1014; --card:#181b21; --ink:#e8eaef; --muted:#98a0ad; --line:#282d36;
-           --accent:#63b3e0;
-           --btn:#262b36; --btn-line:#3c4453;
-           --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35); }
-  }
-  *{box-sizing:border-box}
+  /* Design kit (tokens + shared components) lives in theme.py; the landing and this
+     viewer both draw from it, so the two surfaces are one system. Committed dark. */
+__KIT__
   html,body{margin:0;height:100%}
-  body{background:var(--bg);color:var(--ink);
-       font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,sans-serif}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.5}
 
+  /* The app header sits under the shared site nav. The nav scrolls away (static)
+     so the app header alone is the sticky element — no two-sticky overlap. */
+  .sitenav{position:static}
   header{position:sticky;top:0;z-index:20;padding:14px 20px 10px;background:var(--card);
          border-bottom:1px solid var(--line)}
   /* Two columns: identity/status on the left, controls on the right. Keeping the
@@ -152,14 +143,8 @@ _PAGE = r"""<!doctype html>
            text-underline-offset:3px;cursor:pointer}
   .hintbtn:hover{color:var(--accent)}
 
-  button{font:inherit;font-size:13px;font-weight:500;color:var(--ink);
-         background:var(--btn);border:1px solid var(--btn-line);border-radius:8px;
-         padding:6px 12px;cursor:pointer;white-space:nowrap;
-         transition:border-color .12s,background .12s,color .12s}
-  button:hover{border-color:var(--accent);color:var(--accent)}
-  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-  button.primary:hover{filter:brightness(1.08);color:#fff}
-
+  /* Buttons (Open / Copy / pager / dialog) come from the shared kit — same system
+     as the landing's CTAs. Only the app-specific controls below override it. */
 
   /* ── Filtering (RP-0033) ─────────────────────────────────────────────────
      Every axis holds a set: empty is unconstrained, several values are an OR,
@@ -326,7 +311,7 @@ _PAGE = r"""<!doctype html>
     h1{font-size:16px}
   }
 </style></head><body>
-
+__TOPBAR__
 <header>
   <!-- Three rows, two columns. Left: who/where you are. Right: the controls that act
        on the grid. The layout count / active holds keep their own line — variable-length
