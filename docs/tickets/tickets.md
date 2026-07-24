@@ -44,6 +44,7 @@ The committed next few, in intended order.
 | [RP-0028](#rp-0028) | P2 | Feature | HEX / custom palettes — an open palette axis |
 | [RP-0030](#rp-0030) | P2 | Feature | Surface format choice in the viewer |
 | [RP-0034](#rp-0034) | P2 | Feature | Named styles / archetypes as browse entry points |
+| [RP-0044](#rp-0044) | P2 | Chore | Mobile browser support — verify and tune the viewer on phones |
 | [RP-0005](#rp-0005) | P3 | Feature | A content design space, alongside the style space |
 | [RP-0006](#rp-0006) | P3 | Feature | Drag-and-drop builder for sections and variants |
 | [RP-0013](#rp-0013) | P3 | Feature | Lint variants, not the master profile |
@@ -56,6 +57,8 @@ The committed next few, in intended order.
 | [RP-0029](#rp-0029) | P3 | Idea | Consume palettes from a brand kit (cross-project) |
 | [RP-0031](#rp-0031) | P3 | Feature | Additive publish — keep several designs at once |
 | [RP-0036](#rp-0036) | P3 | Feature | Items-per-page control |
+| [RP-0045](#rp-0045) | P3 | Feature | Step-by-step picker — choose each axis in turn, reveal the result |
+| [RP-0046](#rp-0046) | P3 | Feature | Live builder — pick axes and watch one layout build in real time |
 
 ## Done
 
@@ -317,6 +320,28 @@ Every typeface value is a **system font stack**, so the same spec renders in a d
 **Interacts with:** **RP-0038** — a hosted demo renders per-visitor-machine until this lands, so the demo would not show what you actually get. **RP-0027** (verify on Windows) — this is the class of divergence that pass would have caught. **RP-0033** — the typeface filter's sample chips can only depict a face the renderer will actually use. **RP-0028** (custom palettes) is the colour-axis sibling of the same "closed set vs open input" question.
 
 **Open:** licence review per face (OFL attribution requirements in the published artefact), whether italics are needed or synthesised, and whether the `mixed` pairing should be re-chosen once the set changes.
+
+### RP-0044 — Mobile browser support {#rp-0044}
+**P2 · Chore · ux**
+
+Make sure the viewer looks and behaves on a phone, not just a narrow desktop window. The groundwork is there — a `width=device-width` viewport meta and the 900px breakpoint collapse the header to one left-aligned column — so a phone gets the single-column layout rather than a zoomed-out desktop. What is *unverified* is everything below that:
+
+- **Touch targets.** Colour swatches are 20px (`.sw`), below the ~44px comfortable-tap guidance; the dropdown pills, card chips and `.vchip` clears are all tuned for a cursor.
+- **The live previews.** Each card is an 816px iframe scaled into a ~270px column — on a phone that is a tiny, unreadable page, and iframes are awkward to scroll past on touch. A tap-to-open (straight to the detail dialog) may be the right mobile behaviour instead of the scaled preview.
+- **The popover** (`#pop`) is positioned off its pill with a viewport clamp, but has not been checked when the pill sits near a screen edge at phone width.
+- **The controls at ~390px** — does `balanceWrap` split the six dropdown pills sensibly, and does `« ‹ Shuffle ›` still hold one line?
+
+Verify on real mobile widths (~390 portrait, ~844 landscape) on at least one real device or emulator, then fix what breaks — likely larger touch targets at small widths, tap-to-open previews, and popover edge handling. **Interacts with RP-0038** — a hosted demo turns a shared link into a phone's first impression, so mobile stops being hypothetical the moment that ships; consider raising to P1 alongside its public launch. Also sits under **RP-0018**'s general viewer UX pass. The regression checklist already enforces a *derived* full/half-window sweep (never a hardcoded width); mobile widths extend that same method downward.
+
+### RP-0045 — Step-by-step picker {#rp-0045}
+**P3 · Feature · explore**
+
+A guided alternative to browsing the whole space: choose one axis at a time — colour, then typeface, then header, and so on — and reveal the finished layout at the end, wizard-style. Where RP-0032 answers "don't meet all 10,080 at once" by leading with a *diverse sample*, this answers it by *funnelling*: each step commits one axis, so the user never faces more than a single decision at a time. Cheap on the existing model — each step is a one-axis constraint (`space.matches` already takes a set per axis) and the reveal is one render of the fully-specified spec. Open questions: can you step back and change an earlier pick; is there a "no preference / surprise me" skip per axis (which just leaves that axis free); and does the final screen hand off into a full browse of what you built (ties to RP-0003's vary-one-axis). Sibling to **RP-0046** — same goal, opposite interaction: sequential-and-hidden vs simultaneous-and-visible.
+
+### RP-0046 — Live builder {#rp-0046}
+**P3 · Feature · ux**
+
+One document, all seven axes on screen at once, and a single preview that rebuilds the instant any of them changes — a configurator, not a gallery. This inverts the grid: instead of scanning 24 renders and picking one, you set each axis and watch your one layout take shape. Rendering is already pure and fast (`compose.render(resume, spec)`), so a live re-render per change is cheap, and the axis controls already exist (the header's swatches + dropdowns from RP-0033) — the new part is binding them to a single live preview rather than to a filtered grid. Distinct from **RP-0006** (a *content* builder — reorder sections, swap variants): this builds the *style* spec, and the two could eventually share one editor over the combined content×style space (**RP-0005**). Sibling to **RP-0045** (the sequential picker). Open: whether live-on-every-change needs debouncing, and how the builder coexists with the grid (a mode toggle, or a panel beside it).
 
 ## Conventions
 
