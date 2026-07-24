@@ -631,6 +631,10 @@ function paletteBar(el){
     group.append(b);
   });
   el.append(group);
+  // Colour gets its own reset, so it is not reachable only through Clear all one
+  // row down. The subtle `.vchip` -- the same per-axis clear every dropdown popover
+  // carries -- not the `.clearbtn` pill, which reads as the global reset.
+  el.append(clearBtn("palette", "vchip"));
 }
 
 // The other six axes are words either way, so they collapse into dropdowns on the

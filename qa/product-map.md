@@ -46,8 +46,10 @@ Use `docs/assets/demo-profile.json` (Jane Smith) as the fixture — never a real
   into one wrapping container, which interleaves swatches and pills the moment it wraps. Both are
   right-aligned (left-aligned below 900px, where `#axes` drops to `grid-column:auto`). `.swgroup` is
   one flex item on purpose so a wrap cannot split the colour label from its swatches; `balanceWrap`
-  runs on `#axes` only (the colour row is a single group). No per-colour Clear — swatches toggle
-  directly and `.fpill.clearbtn` "Clear all" (last in `#axes`) covers reset.
+  runs on `#axes` only (the colour row is a single group). **Two resets, deliberately different
+  weights:** the colour row ends with its own `.vchip` "Clear" (subtle — the same per-axis clear
+  every dropdown popover carries, clears colour only), and `#axes` ends with the `.fpill.clearbtn`
+  "Clear all" pill (the global reset). Both are always present, disabled when there is nothing to clear.
 - **Axis dropdowns**: six `.fpill` pills —
   `Type Header Skills Promo Density Group` — each `<button class="fpill" data-axis="header">`
   carrying a `.ct` count badge when constrained and a `.caret` otherwise. Clicking one opens
