@@ -18,7 +18,6 @@ The committed next few, in intended order.
 |---|---|---|---|
 | [RP-0043](#rp-0043) | P1 | Bug | Filter bar regressions — one merged row, and the nav wraps |
 | [RP-0038](#rp-0038) | P1 | Feature | A hosted GitHub Pages demo — fixture data, click-around, no backend |
-| [RP-0018](#rp-0018) | P1 | Chore | UI/UX pass on the viewer |
 | [RP-0032](#rp-0032) | P1 | Feature | Lead with a small, diverse set — the full space overwhelms |
 
 ## Blocked
@@ -31,6 +30,7 @@ The committed next few, in intended order.
 |---|---|---|---|
 | [RP-0001](#rp-0001) | P1 | Feature | Import an existing resume (PDF/DOCX → `resume.json`) |
 | [RP-0007](#rp-0007) | P1 | Feature | Provenance model — asserted fact vs. model-generated prose |
+| [RP-0018](#rp-0018) | P1 | Chore | UI/UX pass on the viewer |
 | [RP-0025](#rp-0025) | P1 | Feature | `import` as a skill, not a parser |
 | [RP-0039](#rp-0039) | P1 | Feature | Publish a subset of skills without deleting from the profile |
 | [RP-0041](#rp-0041) | P1 | Feature | Bundle deterministic fonts — the typeface axis resolves differently per machine |
