@@ -21,7 +21,7 @@ writes one deliverable — PDF, HTML and Markdown — from the layout you chose.
 different design, its axis values shown as chips beneath it — the active filter's chip
 highlighted on every card. The header keeps identity on the left (the title, and the filtered
 size "1,440 of 10,080 layouts") and the controls on the right: paging, a colour swatch bar with
-green selected, and a dropdown per remaining axis](docs/assets/viewer.png)
+green selected, and a dropdown per remaining axis](docs/assets/viewer-v2.png)
 
 **Layouts are generated, not templates.** There is one renderer and seven independent
 choices — palette, typeface, header treatment, skills treatment, promotion treatment, density
