@@ -11,11 +11,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from . import compose, space, viewer
+from . import compose, space, theme, viewer
 
 
-def build(resume, count: int, out_dir: Path) -> tuple[Path, list]:
-    """Render `count` layouts plus an index. Returns (index path, specs)."""
+def build(resume, count: int, out_dir: Path, source: str = "") -> tuple[Path, list]:
+    """Render `count` layouts plus an index. Returns (index path, specs).
+
+    `source` names the profile these came from; it captions the top bar.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     specs = space.spread(count)
 
@@ -24,7 +27,11 @@ def build(resume, count: int, out_dir: Path) -> tuple[Path, list]:
             compose.render(resume, spec), encoding="utf-8")
 
     index = out_dir / "index.html"
-    index.write_text(viewer.page(specs, resume, preview="file"), encoding="utf-8")
+    index.write_text(
+        viewer.page(specs, resume, preview="file",
+                    topbar=theme.local_nav(source or "resume.json"),
+                    footer=theme.footer()),
+        encoding="utf-8")
 
     # The page is for a human; this is for the agent standing next to them, so a
     # layout can be named in conversation without parsing HTML. The spec name is

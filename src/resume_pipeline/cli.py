@@ -137,7 +137,8 @@ def cmd_catalogue(args) -> int:
     # the one authored file. Findability comes from printing the `file://` link,
     # not from the folder's location.
     out_dir = Path(args.out) if args.out else cache_dir(Path(args.resume)) / "catalogue"
-    index, specs = catalogue.build(resume, args.count, out_dir)
+    index, specs = catalogue.build(resume, args.count, out_dir,
+                                   source=Path(args.resume).name)
     print(f"built {len(specs)} layouts of {space.TOTAL:,}")
     width = max((len(s.name) for s in specs), default=0)
     for spec in specs:

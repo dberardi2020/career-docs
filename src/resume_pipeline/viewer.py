@@ -56,10 +56,13 @@ def page(specs, resume, *, preview: str = "file", exportable: bool = False,
                 tables (the hosted demo, RP-0038). `markups`/`css` come from
                 `demo.bake`; `count` is the page size.
 
-    `topbar`/`footer` are the *site's* chrome, and are passed only by the hosted demo:
-    a local `catalogue` or `serve` is a tool on your machine, not a page of a website,
-    so it gets neither. Both are markup rather than a flag, so this module never has to
-    know what the site's nav says.
+    `topbar`/`footer` are the chrome around the app. Every delivery passes them, so
+    the viewer you run locally and the one you link to are the same product — but the
+    *content* differs, because what is honest differs: the hosted demo's bar links to
+    a front door and an overview, and a local one cannot (there is no landing page on
+    your machine), so `theme.local_nav` gives the same band a non-linking wordmark and
+    captions it with the profile instead. Both are markup rather than a flag, so this
+    module never has to know what either bar says.
     """
     options = [describe(s) for s in specs]
     title = html.escape(resume.name or "Resume")

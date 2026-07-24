@@ -28,7 +28,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-from . import compose, deliverable, model, pdf, space, viewer
+from . import compose, deliverable, model, pdf, space, theme, viewer
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -91,7 +91,9 @@ class Handler(BaseHTTPRequestHandler):
         if route == "/":
             html = viewer.page(space.page(0, ctx["count"]), self._resume(),
                                preview="route", exportable=True,
-                               pages=space.pages(ctx["count"]))
+                               pages=space.pages(ctx["count"]),
+                               topbar=theme.local_nav(ctx["resume_path"].name),
+                               footer=theme.footer())
             return self._send(html.encode(), "text/html; charset=utf-8")
 
         if route == "/api/page":

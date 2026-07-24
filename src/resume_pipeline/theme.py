@@ -29,6 +29,8 @@ light/dark pair (revisiting that is its own ticket).
 """
 from __future__ import annotations
 
+import html as _html
+
 TOKENS = """\
   :root{
     /* ── Midnight Indigo ──────────────────────────────────────────────────
@@ -121,6 +123,9 @@ BASE = """\
   .sitenav-in{display:flex;align-items:center;gap:16px;padding-top:12px;padding-bottom:12px}
   .sitenav-links{display:flex;align-items:center;gap:9px;margin-left:auto}
   .sitenav .btn{font-size:13px;padding:8px 13px}
+  /* What a local tool puts where the site puts navigation: the profile it is
+     showing. Monospace, because it is a filename. */
+  .navnote{color:var(--muted);font-size:12.5px;font-family:var(--font-mono)}
 
   /* The site's footer — one rule, both surfaces. */
   .sitefoot{border-top:1px solid var(--line);padding-top:20px;display:flex;flex-wrap:wrap;
@@ -133,12 +138,27 @@ BASE = """\
 REPO = "https://github.com/dberardi2020/resume-pipeline"
 
 
-def nav(cta: str = "") -> str:
-    """The shared top bar. The brand always links to the front door (``./``); `cta`
-    is the right-aligned links, which differ per page."""
+def nav(cta: str = "", home: str = "./") -> str:
+    """The shared top bar. `cta` is the right-aligned content, which differs per
+    surface. `home` is where the brand links; pass ``""`` for a wordmark that is
+    not a link, which is what a local tool needs — there is no front door on your
+    machine, and a brand linking to the page you are already on is a dead control."""
+    brand = (f'<a class="brand" href="{home}">Resume<span>Pipeline</span></a>' if home
+             else '<span class="brand">Resume<span>Pipeline</span></span>')
     return ('<nav class="sitenav"><div class="wrap sitenav-in">'
-            '<a class="brand" href="./">Resume<span>Pipeline</span></a>'
-            f'<span class="sitenav-links">{cta}</span></div></nav>')
+            f'{brand}<span class="sitenav-links">{cta}</span></div></nav>')
+
+
+def local_nav(source: str) -> str:
+    """The top bar for a *local* tool (`serve`, `catalogue`).
+
+    Same band, same measure, same wordmark as the hosted site, so the viewer you run
+    and the one you link to read as one product. What differs is only what would be
+    dishonest locally: the brand does not link (there is no landing page on your
+    machine), and where the site puts navigation this puts the profile being shown.
+    """
+    return nav(f'<span class="navnote">{_html.escape(source)}</span>'
+               f'<a class="btn ghost" href="{REPO}">GitHub</a>', home="")
 
 
 def footer(note: str = "") -> str:
