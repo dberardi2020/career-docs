@@ -1,5 +1,7 @@
 # career-docs
 
+Live demo (the layout browser, over a sample profile): https://dberardi2020.github.io/career-docs/
+
 > Your career documents as structured data. Browse a design space of 10,080 resume layouts,
 > check them for parse safety, and publish the one you pick. Built to be driven by a coding
 > agent rather than typed by a human. Resumes are the part that is built; the workspace also
