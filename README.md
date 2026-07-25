@@ -21,11 +21,11 @@ writes one deliverable — PDF, HTML and Markdown — from the layout you chose.
 letters and applications, and the name says where this is going — but the resume is the part
 that is built.
 
-![The layout viewer: a row of resume layouts, each a live render of the same profile in a
-different design, its axis values shown as chips beneath it — the active filter's chip
-highlighted on every card. The header keeps identity on the left (the title, and the filtered
-size "1,440 of 10,080 layouts") and the controls on the right: paging, a colour swatch bar with
-green selected, and a dropdown per remaining axis](docs/assets/viewer-v2.png)
+![The layout browser. A title block reads "10,080 layouts, one profile" over a control bar
+holding a colour swatch for each palette, a dropdown per remaining axis, the live layout count
+and a pager. Below it, three of the same sample profile rendered side by side in different
+designs — a left-aligned header, a centred serif masthead, and a dark band — each a real
+render rather than a screenshot](docs/assets/viewer-v3.png)
 
 ### Layouts are generated, not templates
 
