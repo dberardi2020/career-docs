@@ -28,10 +28,10 @@ choices — palette, typeface, header treatment, skills treatment, promotion tre
 and grouping. A **spec** is one combination of the seven, and every combination renders, which
 is where 10,080 comes from. Adding a value to any one choice multiplies the catalogue instead
 of adding a single entry to it. Browse them a page at a time, **Shuffle** to land somewhere
-else in the space entirely, or **hold a colour or typeface** constant to judge the rest against
-it. **Every axis filters**: pick two colours and a typeface and the browse narrows to just
-those (10,080 → 720), with the count and paging following what you picked. Filter from the
-header, or click any chip on a card to say "more like this one".
+else in the space entirely, or narrow the space to what you want to compare. **Every axis
+filters**: pick two colours and a typeface and the browse drops to just those (10,080 → 720),
+with the count and paging following what you picked. Filter from the header, or click any chip
+on a card to say "more like this one".
 
 **Not another resume generator.** That category is well served and mostly abandoned. Three
 things here do not exist elsewhere: layouts as a *design space* rather than a theme list, a

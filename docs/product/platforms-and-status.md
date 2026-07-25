@@ -48,7 +48,7 @@ In rough order of how much they matter:
 | | |
 |---|---|
 | **Import an existing resume** (RP-0001) | PDF/DOCX → profile. The adoption cliff for this whole category — today you transcribe once before anything works. |
-| **Badge-click filter + axis grouping** (RP-0033) | Holding a colour or typeface already filters the browse to that subset (`moss` → 1,440); still missing: clicking a *card's* chip to filter, and clustering the grid by an axis. |
+| **Axis grouping** | Every axis filters and a card's chips filter on click (RP-0033, shipped). Still missing: clustering the grid *by* an axis, so a page reads as "these are the mastheads" rather than a mixed spread. |
 | **The inspector** | A live, read-only view of the profile as it is edited, showing what changed. The answer to "watching an agent rewrite my career history is unnerving". |
 | **Provenance** (RP-0007) | Per claim: human-asserted fact, or model-generated prose. The necessary counterweight to a linter that asks for numbers. |
 | **Cover letters and applications** (RP-0009) | Same data model plus a job posting. Folders are scaffolded and empty. |

@@ -418,14 +418,16 @@ __TOPBAR__
     <span class="pill"><b></b>Layout browser · __TITLE__</span>
     <h1>__TOTAL__ layouts, one profile.</h1>
     <p class="lede">Every card below is a <b>live render</b> of the same profile — not a
-      screenshot, and exactly what publishes. Hold a <b>colour</b> or <b>typeface</b> to keep it
-      constant while you judge the rest, page through the space, and open any layout full size.</p>
+      screenshot, and exactly what publishes. <b>Every axis filters</b>: narrow by colour, by
+      typeface, or by any of the five structural choices, combine them, then page through
+      what is left and open any layout full size.</p>
     <button class="hintbtn" id="hintBtn" aria-expanded="false" aria-controls="hint">What is this?</button>
     <p class="hint" id="hint" hidden>Layouts are <b>generated</b>, not templates — each is one combination of
     seven independent choices, so there are __TOTAL__ of them. The arrows walk the space in
-    order; <b>Shuffle</b> jumps somewhere else entirely. Pick a <b>colour</b> or <b>typeface</b>
-    to hold it constant while you judge the rest. Open any layout, then <b>Make this my resume</b>
-    to publish it — every preview is a live render, identical to what gets published.</p>
+    order; <b>Shuffle</b> jumps somewhere else entirely. <b>All seven choices filter.</b> Pick
+    several values on one axis to mean <i>any of these</i>, and narrow further by combining
+    axes — or click a chip on any card to say "more like this one". Open any layout full size:
+    every preview is a live render, identical to what gets published if you pick it.</p>
   </div>
 </section>
 

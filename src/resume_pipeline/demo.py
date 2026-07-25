@@ -115,8 +115,8 @@ __NAV__
       <span class="pill"><b></b>Live demo · sample profile</span>
       <h1>Your resume is data, not a document.</h1>
       <p class="sub">One structured profile becomes a space of <b>__TOTAL__ parse-safe layouts</b>.
-        Browse the whole space right here — hold a colour or typeface, page through, open any
-        layout. <b>No install, no account</b>, nothing real behind it.</p>
+        Browse the whole space right here — filter on any of the seven choices, page through,
+        open any layout. <b>No install, no account</b>, nothing real behind it.</p>
       <div class="cta">
         <a class="btn primary lg" href="./browse.html">Browse the layouts →</a>
         <a class="btn lg" href="__REPO__">View the source</a>

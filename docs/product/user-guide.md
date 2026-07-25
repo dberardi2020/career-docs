@@ -113,13 +113,22 @@ the detail view, and **Copy Name** puts it on the clipboard.
 first, and **Shuffle** lands somewhere else entirely. `[` and `]` page from the keyboard. This
 works the same in both — `catalogue` pages the space client-side, `serve` asks its process.
 
-**Holding an axis constant.** Palette and typeface are the two axes the eye reacts to first, so
-each has its own control — a **colour** bar and a **typeface** bar. Pick one and the browse
-**narrows to that subset**: hold `moss` and you see only the 1,440 moss layouts, with the header
-count and paging following, so you can judge *structure* against a fixed colour or type. The two
-**compose** — hold `moss` *and* `charter` and you are down to 360 — and **Varied** releases an
-axis. It works in the detail view too. This is not a live edit: holding an axis just browses the
-neighbouring specs that share it, which is exactly what would publish.
+**Narrowing the space.** All seven axes filter, not just the two the eye notices first. Colour
+keeps swatches — a swatch *is* the value — and the other six are dropdowns in the same bar, each
+carrying a count of what you have picked.
+
+An axis holds a **set**: empty means unconstrained, several values on one axis mean *any of
+these*, and axes combine. Pick `moss` and the browse drops to the 1,440 moss layouts; add
+`charter` and you are down to 360; pick `moss` *and* `plum` and you are back up to 2,880. The
+count and the paging follow throughout. **Clear** resets one axis, **Clear all** resets
+everything; both stay visible but disabled when there is nothing to clear, so the row never
+shifts under you.
+
+The fastest route in is usually not the header at all — **click any chip on a card** to filter
+to that value. You are looking at a layout you like, and "more like this one" starts there.
+
+This is not a live edit. Filtering just browses the specs that match, which is exactly what
+would publish.
 
 ### 4. Publish — write the deliverable
 
