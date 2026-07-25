@@ -29,13 +29,8 @@ green selected, and a dropdown per remaining axis](docs/assets/viewer-v2.png)
 
 ### Layouts are generated, not templates
 
-There is one renderer and seven independent choices:
-
-| | |
-|---|---|
-| **palette** · **typeface** | the two you notice first |
-| **header** · **skills** · **promotions** | how those sections are treated |
-| **density** · **grouping** | how much fits, and in what order |
+There is one renderer and seven independent choices: **palette, typeface, header, skills,
+promotions, density, grouping**.
 
 A **spec** is one combination of the seven, and every combination renders — which is where
 10,080 comes from. Add one value to one choice and the whole space multiplies.
