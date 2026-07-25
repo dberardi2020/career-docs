@@ -16,7 +16,6 @@ The committed next few, in intended order.
 
 | ID | Pri | Type | Title |
 |---|---|---|---|
-| [RP-0038](#rp-0038) | P1 | Feature | A hosted GitHub Pages demo — fixture data, click-around, no backend |
 | [RP-0032](#rp-0032) | P1 | Feature | Lead with a small, diverse set — the full space overwhelms |
 
 ## Blocked
@@ -68,6 +67,7 @@ living numbers are in the docs.*
 
 | ID | Title | Closed |
 |---|---|---|
+| RP-0038 | **A hosted demo, live at [dberardi2020.github.io/career-docs](https://dberardi2020.github.io/career-docs/).** A landing page plus the whole design space, browsable and filterable with **no backend** — the install barrier RP-0023 named, gone. The load-bearing trick: a layout's `<body>` depends only on (header, skills, promo, grouping) = **120** variants and its `<style>` only on (palette, typeface, density, band) = **168**, so **288 renders reassemble all 10,080 previews in the browser**, byte-identical to `compose.render` (proven across the whole space, ~0.3s, now a test). `bake()`/`rebuild()` are the only source of layout HTML, so there is no second renderer to drift. Shipped alongside three things the ticket did not ask for but needed: a **Midnight Indigo design kit** (`theme.py` — one set of tokens and components behind both surfaces), a **rebuild of the browser as a page of the site** rather than an app bolted under a nav (intro that scrolls away, slim sticky control bar, cards at the landing's polish), and a **consolidation back to two deliveries** after this ticket quietly added a third — `preview="file"` was a lesser static mode with no filters, and it was the one place a bug hid from every other delivery. `catalogue` now runs the same `embed` delivery, so a static folder browses all 10,080 too. Published by a Pages workflow on every push to `main`; Pages itself had to be enabled out of band because `GITHUB_TOKEN` cannot create a Pages site. 229 unit / 38 acceptance. | 2026-07-24 |
 | RP-0043 | **Filter bar back to two rows; the pager no longer wraps.** `171f20c` had merged colour and the six dropdowns into one `#filters` bar that interleaved swatches and pills the moment it wrapped, and let `« ‹ Shuffle ›` break across lines. Both were regressions against `f8bd48f`, and the fix diffs against it rather than redesigning: colour keeps its own row (`#palette`), the six dropdowns sit on the row directly below (`#axes`, `grid-column:2` so nothing lands in the left gutter), and the two read as one *group* by adjacency and shared alignment — not by being concatenated. Kept from the merged version what was right: the `.swgroup` (label + swatches as one flex item, so a wrap can't split them), `balanceWrap` on the dropdown row only, the <900px single-column collapse (where `#axes` drops to `grid-column:auto`), and "What is this?" below the controls. The pager holds its line via `.nav{flex-shrink:0}` paired with `#pageMeta{min-width:0}` — the count text yields instead. Colour keeps its own `.vchip` "Clear" (the subtle per-axis clear every dropdown popover already carries, clearing colour only), distinct in weight from the `Clear all` pill one row below that resets everything — the deferred "does the colour Clear return?" question, answered yes now that colour has its own row. `Color`/`colour` stays mixed (UI American, prose British) pending a repo-wide call. Verified live at 1400 / 950 / 700 / 500px — nav one line at every width, popover still moves the header 0px. 215 unit / 38 acceptance. | 2026-07-24 |
 | RP-0033 | **Every axis is a multi-select filter.** An axis now holds a *set*: empty is unconstrained, several values are an OR, and axes combine with AND — so a "hold" is just a selection of one, which generalises RP-0037 rather than replacing it. Driven from the header (a colour swatch bar, plus a dropdown per remaining axis, each carrying a count badge) **or by clicking any chip on a card** — the real "more like this one" gesture. `space.matches` accepts a list per axis, `/api/page` takes repeated params (`?palette=moss&palette=plum`), and the vestigial `pin()` name-rewriting from the overlay era is gone. Chrome decisions: **colour keeps swatches** (a swatch *is* the value); everything else is a dropdown, because they are words either way. **A popover, not a panel** — opening one moves the header **0px**, measured. One verb for reset (`Clear` per axis, `Clear all`), always present but disabled, so the row never shifts. Pill rows **wrap evenly** (7 items go 4+3, then 3+2+2) since flex wraps greedily. Header costs +14px at rest (115→129). 215 unit tests, 38 acceptance checks. | 2026-07-23 |
 | RP-0035 | **Counts follow the filtered set.** The header total and page count were derived from the full enumeration (`space.TOTAL`, 10,080 / 420 pages) and so were static under a hold. Now `space.total(filters)`/`space.pages(count, filters)` compute over the filtered subset, `/api/page` returns the live `total`, and the viewer updates both as holds change — "1,440 layouts · holding moss · page 1 of 60", back to 10,080 / 420 on release. Landed with the RP-0033 hold-as-filter slice. Unit-tested in `test_space.py`; acceptance asserts the HTTP total/pages drop under a hold. | 2026-07-23 |
@@ -144,14 +144,14 @@ JSON Resume has no field for in-company progression, and its hosted registry val
 
 A hosted version is plausible later, so nothing should assume a local filesystem or a single user. Currently sound: rendering is pure (`compose.render(resume, spec)`), the server speaks a small HTTP API, and it now holds **no per-user session state at all** — the sampler and its verdict file are gone, so there is nothing to scope to a user. Currently not: the cache directory and `find_resume`'s upward walk are single-user assumptions, and `pdf.py` shells out to a local Chrome. Audit and document the boundary — do not build hosting, just avoid foreclosing it.
 
-**Raised P3 → P2 (2026-07-23):** RP-0038 ships a static demo that directly exercises this boundary, so the audit stopped being hypothetical.
+**Raised P3 → P2 (2026-07-23):** RP-0038 shipped a static demo that directly exercises this boundary, so the audit stopped being hypothetical.
 
 ### RP-0018 — UI/UX pass on the viewer {#rp-0018}
 **P1 · Chore · ux**
 
 Feedback: it "could use a lot of tuning and refining". Now unblocked — RP-0015 means there is one surface to polish rather than two that disagree. Settle empty/error states, loading behaviour while iframes render, and keyboard affordances currently discoverable only from a hint strip. The stated aesthetic is modern — pills, icons, chips — so the axis chips are the obvious place to start.
 
-**Raised P2 → P1 (2026-07-23):** RP-0038 makes the viewer the **first impression for everyone**, not just for people who already installed it — polish stops being optional the moment there's a public link.
+**Raised P2 → P1 (2026-07-23):** RP-0038 makes the viewer the **first impression for everyone**, not just for people who already installed it — polish stops being optional the moment there's a public link. **That link is live as of 2026-07-24**, so this is no longer anticipatory.
 
 **Header slice landed 2026-07-23.** The hero-shot review found the header was a five-item left-aligned stack (title, statusline, colour bar, type bar, a three-line explanatory paragraph) with the entire right side below the nav empty — so it read as cluttered on the left, barren on the right, and pushed the grid down. Two fixes shipped:
 
@@ -177,7 +177,7 @@ Pick two layouts you like and browse what sits between them. Despite first appea
 
 Everything today assumes a checkout and a Python environment, which is a real barrier for the audience most likely to want this — someone with a resume and no interest in a toolchain. Options, roughly in ascending cost: a hosted instance (the concept already forbids assuming a local filesystem or single user — rendering is pure and the server holds no session state, so the boundary is mostly kept); running the renderer in the browser via WASM/Pyodide, which keeps the "no server sees your resume" property; or a zero-install agent path where a coding agent fetches and runs it without a persistent install. Decide what "no install" should *mean* before building any of them — the answers differ on where the profile lives, which is the actual question.
 
-**RP-0038 is the cheap first slice** of this — a static fixture demo delivers the "try it with no install" property without settling the larger question. This ticket remains the *decision*.
+**RP-0038 was the cheap first slice** of this, and it shipped: a static fixture demo delivers the "try it with no install" property without settling the larger question. This ticket remains the *decision*.
 
 ### RP-0024 — `work[].stints` is experimental {#rp-0024}
 **P3 · Chore · model**
@@ -247,15 +247,6 @@ Open questions it inherits: whether grouping is a *view* over the current filter
 
 The grid is fixed at 24 live renders per page (`serve(…, count=24)`); let the user pick — e.g. 12 / 24 / 48 — from the viewer. Trade-off to surface: each card is a live iframe render, so more per page means more to render and scroll (24 was chosen as the balance). Self-contained — the page count already follows `count` (`space.pages(count)`). Interacts only with RP-0032 (the diverse default set).
 
-### RP-0038 — A hosted GitHub Pages demo {#rp-0038}
-**P1 · Feature · hosting**
-
-Fixture data, click-around, no backend. Ship a static site (GitHub Pages, matching RP-0023's static-first lean) that serves the viewer over a **fixture profile**: browse the whole design space, hold colour/type, page, open layouts — nothing real behind it. First value is a shareable "try it" link that needs no install (the RP-0023 barrier). The grid already builds client-side; the one server piece is `/preview` and PDF export — for a static demo, pre-render the fixture's previews (or move rendering into the browser).
-
-**Long-term arc:** grow it into *upload/import a resume (or paste JSON Resume) → browse layouts → export/save*, with browser-local state (eventually accounts) so the whole flow runs in the page and no server sees the resume — the privacy property RP-0023 wants. Sequence: the fixture demo first (cheap, high signal); the import/export flow after RP-0001. Enriches RP-0023 and RP-0016.
-
-**Raised P2 → P1 (2026-07-23):** the cheapest thing that changes the project's *reach* — it attacks RP-0023's install barrier at a fraction of the cost. Land **RP-0018** before or alongside it: a public link makes the viewer everyone's first impression.
-
 ### RP-0039 — Publish a subset of skills without deleting from the profile {#rp-0039}
 **P1 · Feature · model**
 
@@ -317,7 +308,7 @@ Every typeface value is a **system font stack**, so the same spec renders in a d
 
 **Cost to weigh:** each typeface multiplies the whole space — 4 → 7 values takes 10,080 → 17,640 layouts. On-thesis ("adding a value multiplies the catalogue"), but it makes **RP-0032**'s overwhelm problem larger, not smaller. Adding values is also the exact scenario ADR-0003's naming scheme was designed to survive, so it should cost nothing structurally.
 
-**Interacts with:** **RP-0038** — a hosted demo renders per-visitor-machine until this lands, so the demo would not show what you actually get. **RP-0027** (verify on Windows) — this is the class of divergence that pass would have caught. **RP-0033** — the typeface filter's sample chips can only depict a face the renderer will actually use. **RP-0028** (custom palettes) is the colour-axis sibling of the same "closed set vs open input" question.
+**Interacts with:** **RP-0038** — the hosted demo is live and renders per-visitor-machine until this lands, so it does not yet show everyone the same thing. **RP-0027** (verify on Windows) — this is the class of divergence that pass would have caught. **RP-0033** — the typeface filter's sample chips can only depict a face the renderer will actually use. **RP-0028** (custom palettes) is the colour-axis sibling of the same "closed set vs open input" question.
 
 **Open:** licence review per face (OFL attribution requirements in the published artefact), whether italics are needed or synthesised, and whether the `mixed` pairing should be re-chosen once the set changes.
 
@@ -331,7 +322,7 @@ Make sure the viewer looks and behaves on a phone, not just a narrow desktop win
 - **The popover** (`#pop`) is positioned off its pill with a viewport clamp, but has not been checked when the pill sits near a screen edge at phone width.
 - **The controls at ~390px** — does `balanceWrap` split the six dropdown pills sensibly, and does `« ‹ Shuffle ›` still hold one line?
 
-Verify on real mobile widths (~390 portrait, ~844 landscape) on at least one real device or emulator, then fix what breaks — likely larger touch targets at small widths, tap-to-open previews, and popover edge handling. **Interacts with RP-0038** — a hosted demo turns a shared link into a phone's first impression, so mobile stops being hypothetical the moment that ships; consider raising to P1 alongside its public launch. Also sits under **RP-0018**'s general viewer UX pass. The regression checklist already enforces a *derived* full/half-window sweep (never a hardcoded width); mobile widths extend that same method downward.
+Verify on real mobile widths (~390 portrait, ~844 landscape) on at least one real device or emulator, then fix what breaks — likely larger touch targets at small widths, tap-to-open previews, and popover edge handling. **Interacts with RP-0038** — a hosted demo turns a shared link into a phone's first impression. **That shipped on 2026-07-24**, so mobile is no longer hypothetical; this is the strongest candidate for the next P1. Also sits under **RP-0018**'s general viewer UX pass. The regression checklist already enforces a *derived* full/half-window sweep (never a hardcoded width); mobile widths extend that same method downward.
 
 ### RP-0045 — Step-by-step picker {#rp-0045}
 **P3 · Feature · explore**

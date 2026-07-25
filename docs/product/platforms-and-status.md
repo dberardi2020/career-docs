@@ -53,7 +53,7 @@ In rough order of how much they matter:
 | **Provenance** (RP-0007) | Per claim: human-asserted fact, or model-generated prose. The necessary counterweight to a linter that asks for numbers. |
 | **Cover letters and applications** (RP-0009) | Same data model plus a job posting. Folders are scaffolded and empty. |
 | **Remix / loadouts / merge** (RP-0003/4/22) | All the same move — constrain some axes, browse the rest. Waiting on the axis-control UI. |
-| **Working without a local install** (RP-0023) | Hosted, WASM, or a zero-install agent path. Undecided, and the options differ on where the profile lives. |
+| **Working without a local install** (RP-0023) | *Trying* it needs no install as of 2026-07-24 — the [hosted demo](https://dberardi2020.github.io/career-docs/) browses the whole space client-side over a fixture (RP-0038). *Using* it on your own resume still does: hosted, WASM, or a zero-install agent path is undecided, and the options differ on where the profile lives. |
 
 ## Known limitations
 
