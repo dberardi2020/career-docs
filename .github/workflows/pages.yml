@@ -1,0 +1,79 @@
+name: Deploy demo
+
+# The hosted demo is `career-docs demo` output — a landing page plus the whole-space
+# browser, entirely static. It is rebuilt from source on every push to main rather
+# than behind a `paths` filter: the rendered layouts depend on compose.py, theme.py
+# and viewer.py as much as on demo.py, so a filter would eventually serve a site that
+# no longer matches the code. The build takes seconds; staleness is the expensive
+# failure, not the CI minute.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and never cancel one mid-flight — a half-published site
+# is worse than a slightly late one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # No `[dev]`: the site build needs the package, not the test tooling. The
+      # package itself has zero runtime dependencies.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      # The sample profile, never anyone's real one — the same fixture the README
+      # screenshot uses.
+      - name: Build the demo site
+        run: career-docs demo docs/assets/demo-profile.json --out site
+
+      # Fail loudly rather than publishing an empty or half-built site.
+      - name: Check the build produced what it should
+        run: |
+          test -s site/index.html
+          test -s site/browse.html
+          grep -q 'const PREVIEW    = "embed"' site/browse.html
+          # The wordmark is split by markup (Career<span>Docs</span>), so match that
+          # rather than the bare word, which never appears in the HTML.
+          grep -q 'Career<span>Docs</span>' site/index.html
+          grep -q 'Career<span>Docs</span>' site/browse.html
+          echo "landing $(du -h site/index.html | cut -f1), browser $(du -h site/browse.html | cut -f1)"
+
+      # `enablement` turns Pages on for the repo the first time this runs, so the
+      # deploy below does not fail against a repo where Pages was never configured
+      # by hand. Idempotent afterwards.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

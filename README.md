@@ -3,7 +3,11 @@
 **Your career documents, kept as data.** Browse thousands of resume layouts, check them for
 parse safety, and publish the one you pick — from inside your coding agent.
 
+**[Browse the layouts →](https://dberardi2020.github.io/career-docs/)** — the whole space, live
+in your browser, over a sample profile. Nothing to install.
+
 [![Tests](https://github.com/dberardi2020/career-docs/actions/workflows/tests.yml/badge.svg)](https://github.com/dberardi2020/career-docs/actions/workflows/tests.yml)
+[![Demo](https://img.shields.io/badge/demo-live-8f7bff)](https://dberardi2020.github.io/career-docs/)
 ![platform: macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue)
 ![python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![license: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -26,6 +30,8 @@ holding a colour swatch for each palette, a dropdown per remaining axis, the liv
 and a pager. Below it, three of the same sample profile rendered side by side in different
 designs — a left-aligned header, a centred serif masthead, and a dark band — each a real
 render rather than a screenshot](docs/assets/viewer-v3.png)
+
+*This is the [live demo](https://dberardi2020.github.io/career-docs/) — the same page, running over a sample profile.*
 
 ### Layouts are generated, not templates
 
