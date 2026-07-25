@@ -212,13 +212,19 @@ The tool is `resume-pipeline`, run from the resume folder (it walks up to find `
 
 ```bash
 resume-pipeline serve                      # interactive viewer: browse, colour-pin, page, publish
-resume-pipeline catalogue                  # a static browsable page of options
+resume-pipeline catalogue                  # the same browser, as a static folder
 ```
 
 `serve` opens the viewer **in the user's own browser** — it calls their default browser for
 them — and then blocks until ctrl-c, so **run it in the background** and let their browser open on
-its own. It shows a grid of live renders of the user's *own* resume in different layouts, a colour
-bar to hold one palette constant while the rest vary, and paging/shuffle to move through the space.
+its own. It shows a grid of live renders of the user's *own* resume in different layouts, with
+paging and shuffle to move through the space, and a filter for **every** axis — colour swatches
+plus a dropdown per remaining choice. Several values on one axis mean *any of these*; axes
+combine to narrow further; clicking a chip on a card filters to that value.
+
+`catalogue` is the same page written to a folder, so it needs no process and survives being
+committed or sent to someone. It browses and filters the whole space too — the difference is
+that only `serve` can **Export PDF** or **Make this my resume**, because those need a backend.
 
 **This viewer is for the user to look at, not for you to drive.** Do **not** open or navigate it
 with browser automation (Claude for Chrome / a Claude-controlled tab) — just start `serve` and their
