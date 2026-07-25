@@ -211,7 +211,7 @@ The tool is `resume-pipeline`, run from the resume folder (it walks up to find `
 ## Commands
 
 ```bash
-resume-pipeline serve                      # interactive viewer: browse, colour-pin, page, publish
+resume-pipeline serve                      # interactive viewer: browse, filter, page, publish
 resume-pipeline catalogue                  # the same browser, as a static folder
 ```
 
