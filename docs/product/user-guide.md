@@ -99,17 +99,19 @@ resume-pipeline serve          # the same viewer, with a process behind it
 ```
 
 `catalogue` writes a self-contained folder into the cache and prints a `file://` link — no
-server, and you can commit it or send it to someone. `serve` renders previews on request and
-adds two actions the static version cannot have: **Export PDF**, and **Make this my resume**,
-which publishes directly.
+server, and you can commit it or send it to someone. It is not a lesser viewer: the index
+browses and filters all 10,080 layouts in your browser, and writes a real render per spec
+beside it (plus `options.json`) as the part you commit or hand to an agent. `serve` renders
+previews on request and adds the two actions a static page cannot have: **Export PDF**, and
+**Make this my resume**, which publishes directly.
 
 Every preview is a **live render** — the same function that publishes — so nothing you see
 can drift from what you get. Cards show each spec's axis values as chips; the full name is in
 the detail view, and **Copy Name** puts it on the clipboard.
 
-**Moving through the space** (served viewer): the arrows step one page at a time, **«** jumps
-back to the first, and **Shuffle** lands somewhere else entirely. `[` and `]` page from the
-keyboard. The static `catalogue` has no pages — it is a fixed spread across the whole space.
+**Moving through the space:** the arrows step one page at a time, **«** jumps back to the
+first, and **Shuffle** lands somewhere else entirely. `[` and `]` page from the keyboard. This
+works the same in both — `catalogue` pages the space client-side, `serve` asks its process.
 
 **Holding an axis constant.** Palette and typeface are the two axes the eye reacts to first, so
 each has its own control — a **colour** bar and a **typeface** bar. Pick one and the browse

@@ -9,6 +9,8 @@ from __future__ import annotations
 import json
 import re
 
+import pytest
+
 from resume_pipeline import compose, space, viewer
 
 SPECS = space.spread(5)
@@ -32,10 +34,18 @@ def test_page_embeds_the_axes_as_facets(resume):
                for o in options)
 
 
-def test_static_delivery_points_at_sibling_files(resume):
-    html = viewer.page(SPECS, resume, preview="file")
-    assert 'const PREVIEW    = "file"' in html
+def _embed(resume, **kw):
+    """The static delivery, with the tables it runs on."""
+    data = viewer.bake(resume)
+    return viewer.page(SPECS, resume, preview="embed", markups=data["markups"],
+                       css=data["css"], **kw), data
+
+
+def test_static_delivery_rebuilds_previews_in_the_browser(resume):
+    html, _ = _embed(resume)
+    assert 'const PREVIEW    = "embed"' in html
     assert 'const EXPORTABLE = false' in html
+    assert "const MARKUPS = null" not in html      # the tables actually shipped
 
 
 def test_served_delivery_points_at_the_preview_route(resume):
@@ -44,12 +54,36 @@ def test_served_delivery_points_at_the_preview_route(resume):
     assert 'const EXPORTABLE = true' in html
 
 
+def test_there_is_no_third_delivery(resume):
+    """`preview="file"` was a lesser static mode — a fixed sample with no filters,
+    and the one place a bug could hide from every other delivery. It is gone, and an
+    unknown delivery is an error rather than a page that half works (ADR-0004)."""
+    with pytest.raises(ValueError, match="unknown delivery"):
+        viewer.page(SPECS, resume, preview="file")
+
+
+def test_the_static_delivery_cannot_ship_without_its_tables(resume):
+    """embed rebuilds every preview from the baked tables; without them the page
+    would render an empty grid instead of failing the build."""
+    with pytest.raises(ValueError, match="baked markups/css"):
+        viewer.page(SPECS, resume, preview="embed")
+
+
 def test_the_two_deliveries_differ_only_in_those_switches(resume):
-    static = viewer.page(SPECS, resume, preview="file")
+    """ADR-0004's guardrail: normalise the delivery switches and the two pages are
+    byte-equal, so a third difference cannot appear without someone deciding to add
+    it. This is the test that did *not* cover embed when embed was added."""
+    embed, data = _embed(resume)
     served = viewer.page(SPECS, resume, preview="route", exportable=True)
-    normalise = (lambda h: h.replace('"route"', '"file"')
-                            .replace("EXPORTABLE = true", "EXPORTABLE = false"))
-    assert normalise(served) == normalise(static)
+
+    def normalise(h):
+        # The baked tables are the payload embed runs on, not a difference in the
+        # page; blank them and the two must agree line for line.
+        h = re.sub(r"^const (MARKUPS|CSSTAB)  ?= .*$", r"const \1 =", h, flags=re.M)
+        return (h.replace('"embed"', '"route"')
+                 .replace("EXPORTABLE = true", "EXPORTABLE = false"))
+
+    assert normalise(served) == normalise(embed)
 
 
 def test_the_resume_name_titles_the_page(resume):
@@ -85,9 +119,9 @@ def test_the_served_viewer_offers_every_palette(resume):
     import re
     pals = json.loads(re.search(r"const PALETTES\s*=\s*(\[.*?\]);", html).group(1))
     assert [p["name"] for p in pals] == [p[0] for p in compose.PALETTES]
-    # Filtering pages a narrowed subset, which needs a server; the static
-    # catalogue is a fixed sample on disk, so the controls are absent there.
-    assert 'const CAN_FILTER = PREVIEW === "route"' in html
+    # Both deliveries filter now — the static one client-side — so there is no
+    # longer a mode where these controls are absent.
+    assert "const FILTERS    = Object.fromEntries" in html
 
 
 def test_the_served_viewer_offers_every_typeface(resume):
@@ -209,3 +243,50 @@ def test_a_filtered_page_only_contains_matching_layouts():
     for spec in got:
         assert compose.PALETTES[spec.palette][0] in {"moss", "plum"}
         assert compose.DENSITIES[spec.density][0] == "compact"
+
+
+# ── the bake invariant ─────────────────────────────────────────────────────────
+# This is the load-bearing claim of the static delivery: a rendered layout separates
+# into a <body> that depends on four axes (120 combinations) and a <style> that
+# depends on four others (168), so 288 renders can rebuild all 10,080 previews in a
+# browser with no backend. If it ever stops holding, the hosted demo and the local
+# catalogue start showing layouts that differ from what publishes — silently.
+#
+# It went untested from the day it shipped. The whole space costs ~0.3s to verify,
+# so this checks every spec rather than a sample.
+
+def test_baking_reassembles_every_layout_exactly(resume):
+    data = viewer.bake(resume)
+    specs = space.browse_order()
+    assert len(specs) == space.TOTAL
+    mismatched = [s.name for s in specs
+                  if viewer.rebuild(s, data) != compose.render(resume, s).rstrip("\n")]
+    assert not mismatched, f"{len(mismatched)} of {len(specs)} differ, e.g. {mismatched[:3]}"
+
+
+def test_the_tables_are_small_because_the_axes_split(resume):
+    """288 renders, not 10,080 — the separation is the point, so assert the sizes
+    rather than trusting the comment."""
+    data = viewer.bake(resume)
+    assert len(data["markups"]) == 120
+    assert len(data["css"]) == 168
+
+
+def test_the_js_and_python_agree_on_the_table_keys(resume):
+    """`previewDoc()` builds its keys in JS; `markup_key`/`css_key` build them here.
+    They are separate implementations of one format, so pin the format."""
+    spec = space.spread(1)[0]
+    assert viewer.markup_key(spec) == "|".join(
+        (spec.header, spec.skills, spec.promo, spec.grouping))
+    assert viewer.css_key(spec) == "|".join(
+        (str(spec.palette), str(spec.typeface), str(spec.density),
+         "1" if spec.header == "band" else "0"))
+
+
+def test_the_preview_title_matches_the_real_render(resume):
+    """The page's own <title> falls back to "Resume" for a nameless profile; the
+    preview's must not, or an embed preview would differ from what publishes."""
+    data = viewer.bake(resume)
+    html_ = viewer.page(SPECS, resume, preview="embed",
+                        markups=data["markups"], css=data["css"])
+    assert f'const DEMO_TITLE = {json.dumps(compose.esc(resume.name))}' in html_

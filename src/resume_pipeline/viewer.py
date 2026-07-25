@@ -1,13 +1,21 @@
 """The one viewer: a grid of live layout previews.
 
 There used to be two of these — a static catalogue and a served explorer — rendering
-the same grid of the same scaled iframes, differing only in where a preview came from
-and whether it could export. They drifted, as duplicated UI does. This is the single
-implementation, parameterised by the two things that actually differ:
+the same grid of the same scaled iframes. They drifted, as duplicated UI does. This is
+the single implementation (ADR-0004), parameterised by the two things that actually
+differ between deliveries:
 
-- **where previews come from** — a sibling `.html` file, or a `/preview/` route;
-- **whether the page can act** — a served page can export a PDF; a file on disk cannot,
-  so that control is simply absent rather than present and broken.
+- **where previews come from** — a `/preview/` route on a running server, or the baked
+  `markups`/`css` tables reassembled in the browser (see `bake`);
+- **whether the page can act** — a served page can export a PDF and publish; a static
+  one cannot, so those controls are absent rather than present and broken.
+
+Everything else is identical, and a test asserts that: normalise those two switches
+and the two deliveries are byte-equal. **Keep it that way.** A third mode used to
+exist — `preview="file"`, a fixed 21-layout sample with no filters at all — and it was
+the one place a bug could hide from every other delivery, which is exactly what
+happened. It is gone: anything static is now `embed`, which browses and filters the
+whole space with no backend, so both deliveries are the same product.
 
 Previews are HTML in scaled iframes, never pre-rendered images. They are therefore
 *live* — what you see is what publishes, and a catalogue costs milliseconds to build
@@ -17,8 +25,76 @@ from __future__ import annotations
 
 import html
 import json
+import re
 
 from . import compose, space, theme
+
+# render() emits a fixed skeleton; these lift the two spec-dependent spans out of it.
+_STYLE = re.compile(r"<style>(.*?)</style>", re.S)
+_BODY = re.compile(r"</head><body>(.*?)</body></html>", re.S)
+
+
+def markup_key(spec: compose.Spec) -> str:
+    """The axes that decide the body markup. Must match the JS side exactly."""
+    return "|".join((spec.header, spec.skills, spec.promo, spec.grouping))
+
+
+def css_key(spec: compose.Spec) -> str:
+    """The axes that decide the stylesheet — palette/typeface/density, and whether
+    the header bleeds (only `band` does), which changes the page boxes."""
+    return "|".join((str(spec.palette), str(spec.typeface), str(spec.density),
+                     "1" if spec.header == "band" else "0"))
+
+
+def bake(resume) -> dict:
+    """The two lookup tables plus the constant title, enough to rebuild every preview
+    in the browser — which is what `preview="embed"` runs on.
+
+    A rendered layout separates cleanly: its `<body>` depends only on
+    (header, skills, promo, grouping) — **120** — and its `<style>` only on
+    (palette, typeface, density, header==band) — **168**. So 288 renders cover all
+    10,080 layouts. `test_viewer.py` proves the reassembly is byte-identical to
+    `compose.render`; that invariant is the only reason a static delivery can browse
+    the whole space with no backend.
+
+    Renders 120 bodies and calls `compose.css` 168 times — not the whole space —
+    because the invariant lets each table be filled from a single representative.
+    """
+    markups: dict[str, str] = {}
+    for header in compose.HEADERS:
+        for skills in compose.SKILLS:
+            for promo in compose.PROMOS:
+                for grouping in compose.GROUPINGS:
+                    spec = compose.Spec(0, 0, header, skills, promo, 1, grouping)
+                    key = markup_key(spec)
+                    if key not in markups:
+                        markups[key] = _BODY.search(compose.render(resume, spec)).group(1)
+
+    css: dict[str, str] = {}
+    for palette in range(len(compose.PALETTES)):
+        for typeface in range(len(compose.TYPEFACES)):
+            for density in range(len(compose.DENSITIES)):
+                for header in ("band", "rule"):   # bleeding vs not — the only css split header makes
+                    spec = compose.Spec(palette, typeface, header, "pills", "ladder", density, "grouped")
+                    css[css_key(spec)] = compose.css(spec)
+
+    return {"title": compose.esc(resume.name), "markups": markups, "css": css}
+
+
+def rebuild(spec: compose.Spec, data: dict) -> str:
+    """Reassemble one preview from the baked tables — the Python mirror of the
+    viewer's `previewDoc()`. Exists so a test can hold the two renderers to
+    byte-equality; the browser runs the JS version of exactly this.
+
+    Equals `compose.render(resume, spec)` for every one of the 10,080 specs, up to the
+    newline `render` writes *after* `</html>` — whitespace outside the root element,
+    which no parser sees. `_BODY` captures up to `</body></html>`, so neither this nor
+    the JS reproduces it.
+    """
+    return ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><title>'
+            + data["title"] + ' - Resume</title><style>' + data["css"][css_key(spec)]
+            + '</style></head><body>' + data["markups"][markup_key(spec)]
+            + '</body></html>')
 
 
 def axes_of(spec: compose.Spec) -> dict[str, str]:
@@ -43,18 +119,18 @@ def describe(spec: compose.Spec) -> dict:
     }
 
 
-def page(specs, resume, *, preview: str = "file", exportable: bool = False,
+def page(specs, resume, *, preview: str = "route", exportable: bool = False,
          pages: int = 0, markups: dict | None = None, css: dict | None = None,
          count: int = 24, topbar: str = "", footer: str = "") -> str:
     """Render the viewer.
 
-    `preview` is one of:
-    - "file"  — previews sit beside the page as `<name>.html` (static catalogue);
-    - "route" — previews come from `/preview/<name>` on a running server;
+    `preview` is one of the two deliveries:
+    - "route" — previews come from `/preview/<name>` on a running server, which also
+                pages and filters; this delivery can export and publish;
     - "embed" — no server: the whole space is enumerated, filtered and paged in the
                 browser, and every preview is rebuilt from the baked `markups`/`css`
-                tables (the hosted demo, RP-0038). `markups`/`css` come from
-                `demo.bake`; `count` is the page size.
+                tables. Used by both static outputs — the hosted demo and the local
+                `catalogue`. `markups`/`css` come from `bake`; `count` is the page size.
 
     `topbar`/`footer` are the chrome around the app. Every delivery passes them, so
     the viewer you run locally and the one you link to are the same product — but the
@@ -64,6 +140,14 @@ def page(specs, resume, *, preview: str = "file", exportable: bool = False,
     captions it with the profile instead. Both are markup rather than a flag, so this
     module never has to know what either bar says.
     """
+    # Two deliveries, and only two (ADR-0004). A third mode is how the last one grew
+    # a lesser variant nothing tested, so an unknown one is an error rather than a
+    # page that renders and quietly does half of what it should.
+    if preview not in ("route", "embed"):
+        raise ValueError(f"unknown delivery {preview!r}: expected 'route' or 'embed'")
+    if preview == "embed" and not (markups and css):
+        raise ValueError("preview='embed' needs the baked markups/css from bake()")
+
     options = [describe(s) for s in specs]
     title = html.escape(resume.name or "Resume")
     # Palette is one axis, and the first segment of every spec name — so the
@@ -97,7 +181,7 @@ def page(specs, resume, *, preview: str = "file", exportable: bool = False,
                 .replace("__FOOTER__", foot) \
                 .replace("__PAGES__", str(pages)) \
                 .replace("__AXES__", json.dumps(axes_meta)) \
-                .replace("__TITLE_JS__", json.dumps(title)) \
+                .replace("__TITLE_JS__", json.dumps(compose.esc(resume.name))) \
                 .replace("__TITLE__", title) \
                 .replace("__TOTAL__", f"{space.TOTAL:,}") \
                 .replace("__TOTAL_N__", str(space.TOTAL)) \
@@ -412,17 +496,14 @@ const ACTIVE     = () => AXES.reduce((n, a) => n + FILTERS[a.key].size, 0);
 let   OPEN_AXIS  = null;   // which dropdown is showing, if any
 
 const $ = s => document.querySelector(s);
-const previewUrl = name =>
-  PREVIEW === "route" ? "/preview/" + encodeURIComponent(name) : name + ".html";
+const previewUrl = name => "/preview/" + encodeURIComponent(name);
 
-// Filtering narrows the browse server-side, so it needs a server to page the
-// subset. The static catalogue is a fixed sample already written to disk, so the
-// controls are absent there rather than present and inert. The embedded demo
-// (RP-0038) is the third case: no server, but the whole space is browsable and
-// filterable *client-side* — paging is array maths and every preview is rebuilt
-// in the browser from the baked markup/CSS tables.
+// Two deliveries, and this is the only thing that separates them (ADR-0004):
+// "route" asks a server for each page and each preview; "embed" has no server, so
+// it enumerates, filters and pages the whole space in the browser and rebuilds every
+// preview from the baked markup/CSS tables. Both browse all 10,080 and both filter —
+// there is no third, lesser mode.
 const EMBED = PREVIEW === "embed";
-const CAN_FILTER = PREVIEW === "route" || EMBED;
 
 // ── Embedded demo: the whole space, no backend ─────────────────────────────
 // MARKUPS[header|skills|promo|grouping] -> <body> HTML   (120)
@@ -431,6 +512,9 @@ const CAN_FILTER = PREVIEW === "route" || EMBED;
 // so this is the one renderer's output, not a second renderer.
 const MARKUPS = __MARKUPS__;
 const CSSTAB  = __CSS__;
+// The preview's <title>, escaped exactly as compose.render escapes it — NOT the page
+// title above, whose "Resume" fallback would make a nameless profile's preview differ
+// from the real render. viewer.rebuild() is the Python mirror of previewDoc() below.
 const DEMO_TITLE = __TITLE_JS__;
 const COUNT = __COUNT__;                       // layouts per page
 const _AXORDER = ["palette","typeface","header","skills","promo","density","grouping"];
@@ -550,17 +634,13 @@ function render(){
   // The count follows the filters: narrow an axis and "10,080 layouts" becomes the
   // size of that subset. The controls already say *what* is filtered, so repeating
   // it here would be redundant — this says only how much (RP-0033/0035).
-  if(PREVIEW === "route" || EMBED){
-    $("#meta").textContent = ACTIVE()
-      ? `${TOTAL.toLocaleString()} of ${SPACE_TOTAL.toLocaleString()} layouts`
-      : `${TOTAL.toLocaleString()} layout${TOTAL===1?"":"s"}`;
-    $("#nav").hidden = PAGES <= 1;
-    $("#pageMeta").textContent =
-      PAGES > 1 ? `page ${PAGE_INDEX + 1} of ${PAGES.toLocaleString()}` : "";
-    $("#first").disabled = PAGE_INDEX === 0;   // already home
-  } else {
-    $("#meta").textContent = `${OPTIONS.length} of ${TOTAL.toLocaleString()} possible layouts`;
-  }
+  $("#meta").textContent = ACTIVE()
+    ? `${TOTAL.toLocaleString()} of ${SPACE_TOTAL.toLocaleString()} layouts`
+    : `${TOTAL.toLocaleString()} layout${TOTAL===1?"":"s"}`;
+  $("#nav").hidden = PAGES <= 1;
+  $("#pageMeta").textContent =
+    PAGES > 1 ? `page ${PAGE_INDEX + 1} of ${PAGES.toLocaleString()}` : "";
+  $("#first").disabled = PAGE_INDEX === 0;   // already home
   const grid = $("#grid");
   grid.innerHTML = "";
   OPTIONS.forEach((v, i) => {
@@ -575,8 +655,7 @@ function render(){
         <div class="chips">${Object.entries(axes).map(([ax, val]) =>
           `<button class="chip${FILTERS[ax] && FILTERS[ax].has(val) ? " on" : ""}"
                    data-ax="${ax}" data-v="${val}"
-                   title="${CAN_FILTER ? "Filter to " + val : val}"
-                   ${CAN_FILTER ? "" : "disabled"}>${val}</button>`).join("")}</div>
+                   title="Filter to ${val}">${val}</button>`).join("")}</div>
         <div class="acts">
           <button class="o">Open</button>
           <button class="c">Copy Name</button>
@@ -591,7 +670,7 @@ function render(){
     card.querySelector(".c").onclick = ()=>copy(name);
     // A chip is the fastest route into a filter: you are looking at a layout you
     // like, and "more like this one" starts here rather than in the header.
-    if(CAN_FILTER) card.querySelectorAll(".chips .chip").forEach(chip =>
+    card.querySelectorAll(".chips .chip").forEach(chip =>
       chip.onclick = ()=>toggleFilter(chip.dataset.ax, chip.dataset.v));
     grid.appendChild(card);
   });
@@ -694,7 +773,6 @@ function clearBtn(axis, cls){
 // label beats. Label and swatches travel as one flex item (`.swgroup`) so a wrap
 // can never split them — which is also why this row needs no balanceWrap.
 function paletteBar(el){
-  if(!CAN_FILTER){ el.hidden = true; return; }
   el.textContent = "";
 
   const palette = AXES.find(a => a.key === "palette");
@@ -722,7 +800,6 @@ function paletteBar(el){
 // row directly below colour: a fixed number of pills carrying a count, which keeps
 // the header from growing with the size of the selection.
 function axisBar(el){
-  if(!CAN_FILTER){ el.hidden = true; return; }
   el.textContent = "";
 
   AXES.filter(a => a.key !== "palette").forEach(axis => {
@@ -750,7 +827,7 @@ function axisBar(el){
 // dropdown cannot move the header or push the grid down.
 function popover(){
   const pop = $("#pop");
-  if(!CAN_FILTER || !OPEN_AXIS){ pop.hidden = true; return; }
+  if(!OPEN_AXIS){ pop.hidden = true; return; }
   const axis = AXES.find(a => a.key === OPEN_AXIS);
   pop.hidden = false;
   pop.textContent = "";
@@ -778,12 +855,7 @@ function popover(){
   }
 }
 
-function drawFilters(){
-  // Without filtering both bars are hidden, so the row that holds them has to go
-  // too — otherwise it contributes an empty line's worth of gap to the bar.
-  $(".filters").hidden = !CAN_FILTER;
-  paletteBar($("#palette")); axisBar($("#axes")); popover();
-}
+function drawFilters(){ paletteBar($("#palette")); axisBar($("#axes")); popover(); }
 
 // Close an open dropdown on a click elsewhere. The origin is recorded during
 // CAPTURE because redrawing detaches the very button that was clicked — by the

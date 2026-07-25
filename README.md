@@ -134,7 +134,7 @@ is the substrate they drive — documented so nothing is hidden, not so you type
 |---|---|
 | `init [dir]` | Scaffold a workspace: `resume.json`, folders, working rules, and the agent skills (`career-resume-update` for content, `career-layouts-browse` for the look). `--skill-only` installs or refreshes just the skills in a folder you already have. |
 | `lint` | Check the profile and a layout: parse safety, structure, vague or unquantified claims. |
-| `catalogue` | Build a static, browsable folder of layout options. Opens from `file://`, no server. |
+| `catalogue` | Build a static, browsable folder of layouts. Opens from `file://`, no server, and still filters and pages the whole space in the browser. |
 | `serve` | The same viewer with a process behind it — previews rendered on request, plus PDF export. |
 | `publish --theme <spec>` | Write the deliverable (`.pdf`, `.html`, `.md`) beside the profile. |
 

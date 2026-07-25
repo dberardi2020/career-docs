@@ -1,74 +1,20 @@
-"""Bake the whole design space into a static, no-backend demo (RP-0038).
+"""The hosted static demo (RP-0038): a landing page plus the whole-space browser.
 
-`serve` needs a process: the grid asks `/api/page` for a filtered page and pulls
-each preview from `/preview/<spec>`. A hosted demo has no process — just files on
-GitHub Pages — so both of those have to move into the browser.
+`serve` needs a process: the grid asks `/api/page` for a filtered page and pulls each
+preview from `/preview/<spec>`. A hosted demo has no process — just files on GitHub
+Pages — so both of those move into the browser. That is `viewer.page(preview="embed")`,
+running on the tables `viewer.bake` produces; the same delivery the local `catalogue`
+uses, so the two static outputs cannot drift.
 
-Paging and filtering are pure functions of the spec name, so they port to JS
-trivially. Rendering is the hard part: it is the Python renderer. But a rendered
-layout separates cleanly (proven across all 10,080 specs):
-
-- its `<body>` markup depends only on (header, skills, promo, grouping) — **120**;
-- its `<style>` depends only on (palette, typeface, density, header==band) — **168**.
-
-So the browser can rebuild *any* of the 10,080 previews from those two small tables
-— which are the *real* renderer's output, baked once at build time. No second
-renderer, no drift: `bake()` is the only place layout HTML comes from, same as
-`serve`. The tables are ~1MB, dominated by 120 near-identical resume bodies, and
-gzip to a fraction of that.
+What lives here is only what is specific to the *site*: the landing page, its hero
+carousel, and the nav/footer copy that differs from a local tool's.
 """
 from __future__ import annotations
 
 import html as _html
-import re
 from pathlib import Path
 
 from . import compose, space, theme, viewer
-
-# render() emits a fixed skeleton; these lift the two spec-dependent spans out of it.
-_STYLE = re.compile(r"<style>(.*?)</style>", re.S)
-_BODY = re.compile(r"</head><body>(.*?)</body></html>", re.S)
-
-
-def markup_key(spec: compose.Spec) -> str:
-    """The axes that decide the body markup. Must match the JS side exactly."""
-    return "|".join((spec.header, spec.skills, spec.promo, spec.grouping))
-
-
-def css_key(spec: compose.Spec) -> str:
-    """The axes that decide the stylesheet — palette/typeface/density, and whether
-    the header bleeds (only `band` does), which changes the page boxes."""
-    return "|".join((str(spec.palette), str(spec.typeface), str(spec.density),
-                     "1" if spec.header == "band" else "0"))
-
-
-def bake(resume) -> dict:
-    """The two lookup tables plus the constant title, enough to rebuild every
-    preview in the browser.
-
-    Renders 120 bodies (one per markup key) and calls `compose.css` 168 times (one
-    per style key) — not the whole space — because the invariant lets each table be
-    filled from a single representative per key.
-    """
-    markups: dict[str, str] = {}
-    for header in compose.HEADERS:
-        for skills in compose.SKILLS:
-            for promo in compose.PROMOS:
-                for grouping in compose.GROUPINGS:
-                    spec = compose.Spec(0, 0, header, skills, promo, 1, grouping)
-                    key = markup_key(spec)
-                    if key not in markups:
-                        markups[key] = _BODY.search(compose.render(resume, spec)).group(1)
-
-    css: dict[str, str] = {}
-    for palette in range(len(compose.PALETTES)):
-        for typeface in range(len(compose.TYPEFACES)):
-            for density in range(len(compose.DENSITIES)):
-                for header in ("band", "rule"):   # bleeding vs not — the only css split header makes
-                    spec = compose.Spec(palette, typeface, header, "pills", "ladder", density, "grouped")
-                    css[css_key(spec)] = compose.css(spec)
-
-    return {"title": compose.esc(resume.name), "markups": markups, "css": css}
 
 
 # ── The hosted site ────────────────────────────────────────────────────────────
@@ -304,7 +250,7 @@ def build(resume, out_dir: Path, count: int = 24) -> Path:
     for stale in out_dir.glob("*.html"):
         stale.unlink()
 
-    data = bake(resume)
+    data = viewer.bake(resume)
     (out_dir / "browse.html").write_text(
         viewer.page(space.spread(count), resume, preview="embed",
                     pages=space.pages(count), markups=data["markups"],

@@ -37,7 +37,7 @@ they carry rules that override anything convenient.
 
     resume-pipeline init [dir]              scaffold a workspace (add --skill-only for just the skill)
     resume-pipeline lint                    parse-safety and content checks; reports, never edits
-    resume-pipeline catalogue               static browsable folder of layout options
+    resume-pipeline catalogue               static browsable folder; filters the whole space, no server
     resume-pipeline serve                   same viewer, served, with PDF export
     resume-pipeline publish --theme <spec>  write the deliverable beside the profile
 
@@ -47,7 +47,8 @@ The profile path is optional: commands walk up from the working directory lookin
 
 `catalogue` also writes `options.json` — each entry is a spec name, description, axes and
 preview path — so a layout can be named in conversation without parsing HTML. The spec name
-is the handle; there are no ordinals.
+is the handle; there are no ordinals. `options.json` lists the specs written to disk as their
+own files; the index itself browses all 10,080.
 
 ## Source
 
