@@ -8,9 +8,9 @@ parse safety, and publish the one you pick — from inside your coding agent.
 ![python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![license: MIT](https://img.shields.io/badge/license-MIT-green)
 
-Your resume is data, not a document — but every tool treats it as a document, so the file
-you send drifts from the file you edit, and choosing how it *looks* means picking from a
-handful of themes somebody else designed.
+Your resume is data, not a document. Keep it that way and two things follow: the file you
+send never drifts from the file you edit, and how it *looks* becomes a choice you make from a
+whole space of layouts rather than a list.
 
 This keeps one structured **profile** as the only thing you edit, generates a **space** of
 10,080 layouts from it, and lets you browse that space until something looks right. The
@@ -19,7 +19,7 @@ writes one deliverable — PDF, HTML and Markdown — from the layout you chose.
 
 **Resumes are what works today.** The workspace `init` scaffolds already holds your cover
 letters and applications, and the name says where this is going — but the resume is the part
-that is built. Nothing below describes anything that does not exist yet.
+that is built.
 
 ![The layout viewer: a row of resume layouts, each a live render of the same profile in a
 different design, its axis values shown as chips beneath it — the active filter's chip
@@ -27,20 +27,32 @@ highlighted on every card. The header keeps identity on the left (the title, and
 size "1,440 of 10,080 layouts") and the controls on the right: paging, a colour swatch bar with
 green selected, and a dropdown per remaining axis](docs/assets/viewer-v2.png)
 
-**Layouts are generated, not templates.** There is one renderer and seven independent
-choices — palette, typeface, header treatment, skills treatment, promotion treatment, density
-and grouping. A **spec** is one combination of the seven, and every combination renders, which
-is where 10,080 comes from. Adding a value to any one choice multiplies the catalogue instead
-of adding a single entry to it. Browse them a page at a time, **Shuffle** to land somewhere
-else in the space entirely, or narrow the space to what you want to compare. **Every axis
-filters**: pick two colours and a typeface and the browse drops to just those (10,080 → 720),
-with the count and paging following what you picked. Filter from the header, or click any chip
-on a card to say "more like this one".
+### Layouts are generated, not templates
 
-**Not another resume generator.** That category is well served and mostly abandoned. Three
-things here do not exist elsewhere: layouts as a *design space* rather than a theme list, a
-linter that checks a **layout** for parse safety, and a workflow built for an agent to drive
-rather than a human to type.
+There is one renderer and seven independent choices:
+
+| | |
+|---|---|
+| **palette** · **typeface** | the two you notice first |
+| **header** · **skills** · **promotions** | how those sections are treated |
+| **density** · **grouping** | how much fits, and in what order |
+
+A **spec** is one combination of the seven, and every combination renders — which is where
+10,080 comes from. Add one value to one choice and the whole space multiplies.
+
+### Moving through it
+
+Page through a screen at a time, or **Shuffle** to land somewhere else entirely.
+
+**Every axis filters.** Pick two colours and a typeface and the browse drops to just those
+— 10,080 → 720 — with the count and paging following what you picked. Filter from the header,
+or click any chip on a card to say "more like this one".
+
+### What is distinctive here
+
+Layouts as a **design space** rather than a theme list. A linter that checks the **layout**
+for parse safety, not just the content. And a workflow built for an agent to drive rather
+than a human to type.
 
 ## Model, in six words
 

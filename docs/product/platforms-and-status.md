@@ -71,7 +71,7 @@ In rough order of how much they matter:
 ## Non-goals
 
 - A web form or a template gallery. Wrong shape; see [`overview.md`](overview.md).
-- Being another resume generator. That category is mature and mostly abandoned.
+- Being a general-purpose resume generator. The renderer exists to serve the design space, not the other way round.
 - The [JSON Resume registry](https://registry.jsonresume.org). Publishing there requires a
   **public gist**, an OAuth scope that reads and writes **all** your gists, and copies the
   resume into a third-party database.

@@ -5,9 +5,9 @@ codebase follows. Read [`concepts.md`](concepts.md) next for the vocabulary.
 
 ## The idea, in one paragraph
 
-Your resume is data, not a document — but the tools treat it as a document, so the file you
-send drifts from the file you edit, and choosing how it *looks* means picking from a handful
-of themes someone else designed. This keeps one structured **profile** as the only thing you
+Your resume is data, not a document. Keep it that way and the file you send never drifts
+from the file you edit, and how it *looks* becomes a choice made from a whole space of
+layouts rather than a list. This keeps one structured **profile** as the only thing you
 edit, generates a **space** of layouts from it, and lets you browse that space until
 something looks right. The editing happens through a coding agent: you say what to change and
 it changes the data. Publishing writes one **deliverable** — PDF, HTML and Markdown — from
@@ -15,32 +15,30 @@ the layout you chose.
 
 Scope, stated plainly: **the resume is the part that is built.** The workspace `init`
 scaffolds also holds cover letters and applications, and the name points at bringing them
-under the same treatment — but nothing in these docs describes a capability that does not
-exist today.
+under the same treatment.
 
 ## Who it is for
 
 Someone who already works inside a coding agent, keeps their resume under version control or
 wishes they did, and is tired of a `.docx` that is simultaneously the source and the output.
 
-It is **not** for someone who wants a web form and a template gallery. That is well served,
-and running a server to edit a text file is the wrong shape. See
+It is **not** for someone who wants a web form and a template gallery — running a server to
+edit a text file is the wrong shape for this. See
 [`decisions/0007-keep-the-in-house-renderer.md`](../decisions/0007-keep-the-in-house-renderer.md)
 for what was evaluated and rejected.
 
-## What is actually different
+## What is distinctive
 
-Three things, none of which existed elsewhere when this was surveyed in July 2026:
+Three things this is built around:
 
 | | |
 |---|---|
 | **Layouts as a design space** | Not a theme list. Seven independent axes, multiplied out, enumerated exhaustively and browsed with the axes as facets. |
-| **A linter for the *layout*** | Plenty of tools check your prose. Nothing open-source checks whether the layout itself survives a parser. Every generated layout is single-column and ≥10pt *by construction*, and a test re-extracts published PDFs to prove text comes back in document order. |
+| **A linter for the *layout*** | Content linting is common; this also checks whether the layout itself survives a parser. Every generated layout is single-column and ≥10pt *by construction*, and a test re-extracts published PDFs to prove text comes back in document order. |
 | **Built for an agent to drive** | The CLI is the substrate. The workflow, the rules, and the guardrails ship as a skill that installs into the workspace, so the agent knows them without being briefed. |
 
-**What it is not:** another resume generator. That category is mature and mostly abandoned —
-the surveyed tools have download counts in the hundreds. Building a better renderer was never
-the point.
+**What it is not:** a general-purpose resume generator. Building a better renderer was never
+the point — the renderer exists to make the design space browsable.
 
 ## Design principles
 

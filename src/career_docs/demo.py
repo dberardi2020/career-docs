@@ -136,8 +136,8 @@ __NAV__
       <div class="c">
         <h3>__TOTAL__ layouts, one profile</h3>
         <p>Seven independent choices — <b>palette, type, header, skills, promotions, density,
-          grouping</b> — multiply into a space you browse, instead of a handful of themes
-          someone else designed.</p>
+          grouping</b> — multiply into a space you browse, rather than a short list you
+          pick from.</p>
       </div>
       <div class="c">
         <h3>Parse-safe by construction</h3>
