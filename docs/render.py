@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the Resume Pipeline docs from Markdown to styled HTML.
+"""Render the Career Docs docs from Markdown to styled HTML.
 
 The docs follow a MD + HTML lock-step convention: the `.md` is the source of
 truth, the `.html` is a styled human-review render of the same content. This is

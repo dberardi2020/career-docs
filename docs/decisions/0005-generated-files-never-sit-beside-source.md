@@ -13,7 +13,7 @@ perhaps it should live where the resume does and stay findable.
 
 ## Decision
 
-**Everything generated goes to `${XDG_CACHE_HOME:-~/.cache}/resume-pipeline/<workspace>/`.**
+**Everything generated goes to `${XDG_CACHE_HOME:-~/.cache}/career-docs/<workspace>/`.**
 The single exception is `publish`, which writes one canonical deliverable beside the profile.
 
 ## Rationale

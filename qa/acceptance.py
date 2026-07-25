@@ -58,12 +58,12 @@ class QA:
 
 
 def cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, "-m", "resume_pipeline", *args],
+    return subprocess.run([sys.executable, "-m", "career_docs", *args],
                           cwd=cwd, capture_output=True, text=True)
 
 
 def sidecar(folder: Path) -> dict:
-    return json.loads((folder / ".resume-pipeline.json").read_text())
+    return json.loads((folder / ".career-docs.json").read_text())
 
 
 def snapshots(folder: Path) -> list[Path]:
@@ -72,7 +72,7 @@ def snapshots(folder: Path) -> list[Path]:
 
 
 def have_browser() -> bool:
-    from resume_pipeline import pdf
+    from career_docs import pdf
     try:
         return pdf.find_browser() is not None
     except Exception:
@@ -92,7 +92,7 @@ def check_init(qa: QA, tmp: Path) -> None:
     import re
     for name in ("career-resume-update", "career-layouts-browse"):
         text = (ws / ".claude/skills" / name / "SKILL.md").read_text()
-        cmds = set(re.findall(r"resume-pipeline\s+([a-z-]+)", text))
+        cmds = set(re.findall(r"career-docs\s+([a-z-]+)", text))
         qa.ok(f"{name} documents only real commands", cmds <= real, str(cmds - real))
     lint = cli("lint", str(ws / "Resume/resume.json"))
     qa.ok("starter resume lints without crashing", lint.returncode in (0, 1))
@@ -108,7 +108,7 @@ def check_publish(qa: QA, tmp: Path, browser: bool) -> None:
     r = str(ws / "resume.json")
 
     cli("publish", r, "--theme", "editorial", "--formats", "html,md", "--name", "Res")
-    qa.ok("first publish creates a sidecar", (ws / ".resume-pipeline.json").is_file())
+    qa.ok("first publish creates a sidecar", (ws / ".career-docs.json").is_file())
     qa.ok("subset writes html+md, not pdf",
           (ws / "Res.html").exists() and (ws / "Res.md").exists() and not (ws / "Res.pdf").exists())
     qa.ok("first publish archives nothing", len(snapshots(ws)) == 0)
@@ -118,7 +118,7 @@ def check_publish(qa: QA, tmp: Path, browser: bool) -> None:
     qa.ok("bare re-publish keeps layout & formats", "kept your last layout & formats" in out)
     qa.ok("layout is unchanged", sidecar(ws)["layout"] == layout)
     qa.ok("previous design is archived", len(snapshots(ws)) == 1)
-    qa.ok("snapshot is self-describing", any((s / ".resume-pipeline.json").is_file() for s in snapshots(ws)))
+    qa.ok("snapshot is self-describing", any((s / ".career-docs.json").is_file() for s in snapshots(ws)))
 
     # three back-to-back publishes must not collide within the same second
     for theme in ("plain", "editorial", "default"):
@@ -149,7 +149,7 @@ def check_serve(qa: QA, tmp: Path, browser: bool, open_ui: bool = False) -> None
     ws.mkdir()
     (ws / "resume.json").write_text(FIXTURE.read_text())
     port = 8791
-    serve_cmd = [sys.executable, "-m", "resume_pipeline", "serve",
+    serve_cmd = [sys.executable, "-m", "career_docs", "serve",
                  str(ws / "resume.json"), "--port", str(port)]
     if not open_ui:
         serve_cmd.append("--no-open")  # headless: driven over HTTP, no window
@@ -182,7 +182,7 @@ def check_serve(qa: QA, tmp: Path, browser: bool, open_ui: bool = False) -> None
               narrowed and all_moss, f"total {full_total}->{held['total']}, all_moss={all_moss}")
         # RP-0033: an axis holds a *set*. Two values are an OR, so twice the subset;
         # a second axis ANDs on top. Repeated query params carry the selection.
-        from resume_pipeline import compose, space
+        from career_docs import compose, space
         two = json.loads(urllib.request.urlopen(
             base + "/api/page?i=0&palette=moss&palette=plum", timeout=3).read())
         both_seen = {o["axes"]["palette"] for o in two["options"]} <= {"moss", "plum"}
@@ -214,7 +214,7 @@ def check_serve(qa: QA, tmp: Path, browser: bool, open_ui: bool = False) -> None
         # in a real (headless) browser and confirm the JS actually populated it. This is
         # the only check that exercises viewer.js; it uses the browser we already require.
         if browser:
-            from resume_pipeline import compose, pdf
+            from career_docs import compose, pdf
             dom = subprocess.run([pdf.find_browser(), "--headless", "--dump-dom", base + "/"],
                                  capture_output=True, text=True, timeout=30).stdout
             cards = dom.count('class="card')
@@ -237,10 +237,10 @@ def check_serve(qa: QA, tmp: Path, browser: bool, open_ui: bool = False) -> None
                 base + "/api/publish", data=json.dumps({"name": spec}).encode(),
                 headers={"Content-Type": "application/json"}, method="POST")
             urllib.request.urlopen(req, timeout=60).read()
-            from resume_pipeline import deliverable
+            from career_docs import deliverable
             stem = deliverable.existing_stem(ws)
             qa.ok("/api/publish writes a complete deliverable", stem is not None)
-            qa.ok("viewer publish records the same sidecar", (ws / ".resume-pipeline.json").is_file())
+            qa.ok("viewer publish records the same sidecar", (ws / ".career-docs.json").is_file())
         else:
             qa.skip("/api/publish writes the deliverable", "no browser")
         if open_ui:
@@ -255,7 +255,7 @@ def check_serve(qa: QA, tmp: Path, browser: bool, open_ui: bool = False) -> None
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="resume-pipeline acceptance harness")
+    ap = argparse.ArgumentParser(description="career-docs acceptance harness")
     ap.add_argument("--open", action="store_true",
                     help="open the live viewer in a real browser during the serve leg and "
                          "pause so you can watch it (default: headless over HTTP)")

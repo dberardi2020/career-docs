@@ -63,7 +63,7 @@ STARTER_RESUME = """{
 WORKSPACE_CLAUDE_MD = """# Career workspace
 
 The live workspace for career work: the resume, cover letters, and job applications.
-Scaffolded by `resume-pipeline init`.
+Scaffolded by `career-docs init`.
 
 This is a workspace, not an archive of records. Keep signed offer letters, payslips and
 similar somewhere else — this folder is for things actively being worked.
@@ -122,14 +122,14 @@ You should rarely need these — ask your agent instead; it has the `career-*` s
 are here so nothing is hidden.
 
 ```
-resume-pipeline lint                       # ATS + content checks
-resume-pipeline catalogue                  # build a browsable page of layout options
-resume-pipeline serve                      # the same viewer, with PDF export
-resume-pipeline publish --theme default    # write the deliverable beside resume.json
+career-docs lint                       # ATS + content checks
+career-docs catalogue                  # build a browsable page of layout options
+career-docs serve                      # the same viewer, with PDF export
+career-docs publish --theme default    # write the deliverable beside resume.json
 ```
 
 Paths are optional — commands walk up from the working directory to find `resume.json`.
-Scratch renders go to `~/.cache/resume-pipeline/`; only `publish` and `catalogue` write here.
+Scratch renders go to `~/.cache/career-docs/`; only `publish` and `catalogue` write here.
 
 **Never create a virtualenv inside this folder** if it is file-synced (Dropbox, iCloud,
 Drive, a NAS). Virtualenvs carry absolute paths and per-machine binaries.
@@ -146,15 +146,15 @@ The resume lives at `Resume/resume.json` ([JSON Resume](https://jsonresume.org/s
 Everything beside it is **generated** — never hand-edit a `.md`, `.html`, or `.pdf`, because
 the next publish silently overwrites it.
 
-The tool is `resume-pipeline`. It finds `resume.json` by walking up from the working
+The tool is `career-docs`. It finds `resume.json` by walking up from the working
 directory, so the path argument is optional. **You run these, not the user** — they work in an
 agent session; if a turn would end by telling them to run a command, run it instead.
 
 ## Commands
 
 ```bash
-resume-pipeline lint                       # ATS + content checks
-resume-pipeline publish                    # (re)write the deliverable beside resume.json
+career-docs lint                       # ATS + content checks
+career-docs publish                    # (re)write the deliverable beside resume.json
 ```
 
 `publish` overwrites the canonical deliverable beside `resume.json` — that *is* the file
@@ -162,7 +162,7 @@ attached to an application. It snapshots the previous one into `Archive/` first,
 never destroys the last version.
 
 **Publish remembers the layout and formats.** A bare `publish` re-renders the layout and
-formats last used (recorded in `.resume-pipeline.json`), so after a content edit you do **not**
+formats last used (recorded in `.career-docs.json`), so after a content edit you do **not**
 re-pick the design. Change them only when asked — `--theme <preset|layout-id>` or
 `--formats <subset of pdf,html,md>`. To browse and choose a layout, use the
 `career-layouts-browse` skill.
@@ -187,9 +187,9 @@ choice, not a deletion.
 1. Archive first — `Archive/` uses `YYYYMMDD-description.ext`, describing what the snapshot
    is *before*: `cp Resume/resume.json "Resume/Archive/$(date +%Y%m%d)-pre-<change>.json"`
 2. Edit `resume.json` only.
-3. `resume-pipeline lint` — compare against the pre-edit baseline; never silence a finding
+3. `career-docs lint` — compare against the pre-edit baseline; never silence a finding
    with invented data.
-4. `resume-pipeline publish` — keeps the layout and formats already chosen.
+4. `career-docs publish` — keeps the layout and formats already chosen.
 5. Report what changed, and list anything you needed but did not have.
 """
 
@@ -205,14 +205,14 @@ independent choices (palette, typeface, header, skills, promotion, density, grou
 renderer. Browsing that space and publishing the one the user picks is what this skill does;
 editing resume *content* is the `career-resume-update` skill.
 
-The tool is `resume-pipeline`, run from the resume folder (it walks up to find `resume.json`).
+The tool is `career-docs`, run from the resume folder (it walks up to find `resume.json`).
 **You run these, not the user.**
 
 ## Commands
 
 ```bash
-resume-pipeline serve                      # interactive viewer: browse, filter, page, publish
-resume-pipeline catalogue                  # the same browser, as a static folder
+career-docs serve                      # interactive viewer: browse, filter, page, publish
+career-docs catalogue                  # the same browser, as a static folder
 ```
 
 `serve` opens the viewer **in the user's own browser** — it calls their default browser for
@@ -236,7 +236,7 @@ this one.)*
 
 - The user reacts to what they see and says it in words — "the serif one", "the moss one",
   "number 7". Resolve that to a layout, then publish it; don't make them copy an id.
-- Publish the choice: `resume-pipeline publish --theme <layout-id>` (or a preset —
+- Publish the choice: `career-docs publish --theme <layout-id>` (or a preset —
   `default`, `plain`, `editorial`, `warm`). That overwrites the deliverable, snapshots the
   previous design to `Archive/` first, and records the layout so later content edits keep it.
 - In the viewer, **Make this my resume** publishes the layout on screen directly.
@@ -249,16 +249,16 @@ a claim that is not the user's.
 
 WORKSPACE_README = """# Career workspace
 
-Scaffolded by [`resume-pipeline`](https://github.com/dberardi2020/resume-pipeline) —
-`resume-pipeline init`.
+Scaffolded by [`career-docs`](https://github.com/dberardi2020/career-docs) —
+`career-docs init`.
 
 ## Start here
 
 1. Fill in `Resume/resume.json`. Already have a resume? See the import notes in the tool's
    README — until then, transcribe it once; everything downstream is generated from it.
-2. `cd Resume && resume-pipeline lint` — see what a parser and a screener would object to.
-3. `resume-pipeline catalogue` — build a page of layout options and open it.
-4. `resume-pipeline publish --theme <id>` — writes the file you actually send.
+2. `cd Resume && career-docs lint` — see what a parser and a screener would object to.
+3. `career-docs catalogue` — build a page of layout options and open it.
+4. `career-docs publish --theme <id>` — writes the file you actually send.
 
 Better still, ask your coding agent for any of the above — `init` installs the
 `career-resume-update` and `career-layouts-browse` skills that teach it the workflow and the rules.

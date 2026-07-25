@@ -1,6 +1,6 @@
 # Technical docs
 
-How `resume-pipeline` is built, for working on the code. Assumes the vocabulary from
+How `career-docs` is built, for working on the code. Assumes the vocabulary from
 [product/concepts.md](../product/concepts.md).
 
 | Doc | Read it for |

@@ -10,7 +10,7 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-from resume_pipeline import catalogue, compose, server, space
+from career_docs import catalogue, compose, server, space
 
 
 # ── catalogue ─────────────────────────────────────────────────────────────────
@@ -138,7 +138,7 @@ def test_publish_writes_the_deliverable_beside_the_profile(live, monkeypatch):
     Otherwise the last step is copying a name out of the page into a command,
     which was the half-finished handoff this replaces.
     """
-    monkeypatch.setattr("resume_pipeline.pdf.write",
+    monkeypatch.setattr("career_docs.pdf.write",
                         lambda html, path, **kw: path.write_bytes(b"%PDF-fake"))
     base, ctx = live
     spec = space.page(0, 4)[0]
@@ -152,7 +152,7 @@ def test_publish_writes_the_deliverable_beside_the_profile(live, monkeypatch):
 
 
 def test_publish_never_writes_into_the_scratch_cache(live, monkeypatch):
-    monkeypatch.setattr("resume_pipeline.pdf.write",
+    monkeypatch.setattr("career_docs.pdf.write",
                         lambda html, path, **kw: path.write_bytes(b"%PDF-fake"))
     base, ctx = live
     post(base, "/api/publish", {"name": space.page(0, 4)[0].name})

@@ -1,8 +1,8 @@
 """Command line entry point.
 
-    python -m resume_pipeline lint
-    python -m resume_pipeline catalogue
-    python -m resume_pipeline publish --theme default
+    python -m career_docs lint
+    python -m career_docs catalogue
+    python -m career_docs publish --theme default
 
 The resume document is never a hardcoded path — the tool is generic, the content
 lives wherever you keep it. The path argument is optional because commands walk up
@@ -28,13 +28,13 @@ def find_resume(explicit: str | None) -> Path:
     """Locate the resume document.
 
     Typing a path every time is friction on the most common action, so the path
-    is optional: an explicit argument wins, then `RESUME_PIPELINE_RESUME`, then
+    is optional: an explicit argument wins, then `CAREER_DOCS_RESUME`, then
     the nearest `resume.json` walking up from the working directory. That last
-    rule means `resume-pipeline serve` just works anywhere inside a resume folder.
+    rule means `career-docs serve` just works anywhere inside a resume folder.
     """
     if explicit:
         return Path(explicit).expanduser()
-    if env := os.environ.get("RESUME_PIPELINE_RESUME"):
+    if env := os.environ.get("CAREER_DOCS_RESUME"):
         return Path(env).expanduser()
     here = Path.cwd().resolve()
     for folder in (here, *here.parents):
@@ -43,7 +43,7 @@ def find_resume(explicit: str | None) -> Path:
             if found.is_file():
                 return found
     raise SystemExit(
-        "error: no resume found. Pass a path, set RESUME_PIPELINE_RESUME, or run "
+        "error: no resume found. Pass a path, set CAREER_DOCS_RESUME, or run "
         "from a folder containing resume.json."
     )
 
@@ -59,7 +59,7 @@ def cache_dir(resume_path: Path) -> Path:
     render somewhere permanent is an explicit act: see `publish`.
     """
     root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
-    return root / "resume-pipeline" / resume_path.resolve().parent.name
+    return root / "career-docs" / resume_path.resolve().parent.name
 
 
 def resolve_spec(name: str) -> compose.Spec:
@@ -71,7 +71,7 @@ def resolve_spec(name: str) -> compose.Spec:
             f"  presets: {', '.join(compose.PRESETS)}\n"
             f"  or a layout id like "
             f"'moss-charter-band-pills-ladder-airy-grouped' - "
-            f"run `resume-pipeline catalogue` to browse them."
+            f"run `career-docs catalogue` to browse them."
         )
     return spec
 
@@ -144,7 +144,7 @@ def cmd_catalogue(args) -> int:
     for spec in specs:
         print(f"  {spec.name:<{width}}  {spec.description}")
     print(f"\nopen: file://{index}")
-    print("publish one with: resume-pipeline publish --theme <name>")
+    print("publish one with: career-docs publish --theme <name>")
     return 0
 
 
@@ -228,13 +228,13 @@ def cmd_init(args) -> int:
     for line in scaffold.init(root, skill_only=args.skill_only):
         print(line)
     if not args.skill_only:
-        print("\nnext: edit Resume/resume.json, then `cd Resume && resume-pipeline lint`")
+        print("\nnext: edit Resume/resume.json, then `cd Resume && career-docs lint`")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="resume-pipeline",
+        prog="career-docs",
         description="Render a JSON Resume to HTML, PDF and Markdown.",
     )
     sub = parser.add_subparsers(dest="command", required=True)

@@ -12,7 +12,7 @@ import json
 
 import pytest
 
-from resume_pipeline import compose, model
+from career_docs import compose, model
 
 PROMOTED = {
     "name": "Northwind",

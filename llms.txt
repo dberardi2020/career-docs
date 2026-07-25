@@ -1,4 +1,4 @@
-# resume-pipeline
+# career-docs
 
 > Browse a design space of 10,080 resume layouts, check them for parse safety, and publish
 > the one you pick. Built to be driven by a coding agent rather than typed by a human.
@@ -35,14 +35,14 @@ they carry rules that override anything convenient.
 
 ## Commands
 
-    resume-pipeline init [dir]              scaffold a workspace (add --skill-only for just the skill)
-    resume-pipeline lint                    parse-safety and content checks; reports, never edits
-    resume-pipeline catalogue               static browsable folder; filters the whole space, no server
-    resume-pipeline serve                   same viewer, served, with PDF export
-    resume-pipeline publish --theme <spec>  write the deliverable beside the profile
+    career-docs init [dir]              scaffold a workspace (add --skill-only for just the skill)
+    career-docs lint                    parse-safety and content checks; reports, never edits
+    career-docs catalogue               static browsable folder; filters the whole space, no server
+    career-docs serve                   same viewer, served, with PDF export
+    career-docs publish --theme <spec>  write the deliverable beside the profile
 
 The profile path is optional: commands walk up from the working directory looking for
-`resume.json`, or read `RESUME_PIPELINE_RESUME`. `--theme` accepts a preset (`default`,
+`resume.json`, or read `CAREER_DOCS_RESUME`. `--theme` accepts a preset (`default`,
 `plain`, `editorial`, `warm`) or any spec name.
 
 `catalogue` also writes `options.json` — each entry is a spec name, description, axes and
@@ -52,20 +52,20 @@ own files; the index itself browses all 10,080.
 
 ## Source
 
-https://github.com/dberardi2020/resume-pipeline
+https://github.com/dberardi2020/career-docs
 
 ## Docs
 
-- [Concepts](https://github.com/dberardi2020/resume-pipeline/blob/main/docs/product/concepts.md): the vocabulary. Everything else is written in
+- [Concepts](https://github.com/dberardi2020/career-docs/blob/main/docs/product/concepts.md): the vocabulary. Everything else is written in
   these terms.
-- [Overview](https://github.com/dberardi2020/resume-pipeline/blob/main/docs/product/overview.md): the problem, the approach, the design principles.
-- [User guide](https://github.com/dberardi2020/resume-pipeline/blob/main/docs/product/user-guide.md): install, first run, the workflow end to end.
-- [Status](https://github.com/dberardi2020/resume-pipeline/blob/main/docs/product/platforms-and-status.md): what works, what is experimental, what
+- [Overview](https://github.com/dberardi2020/career-docs/blob/main/docs/product/overview.md): the problem, the approach, the design principles.
+- [User guide](https://github.com/dberardi2020/career-docs/blob/main/docs/product/user-guide.md): install, first run, the workflow end to end.
+- [Status](https://github.com/dberardi2020/career-docs/blob/main/docs/product/platforms-and-status.md): what works, what is experimental, what
   is not built. Read before claiming this tool does something.
-- [Architecture](https://github.com/dberardi2020/resume-pipeline/blob/main/docs/technical/architecture.md): the shape of the code.
-- [Decisions](https://github.com/dberardi2020/resume-pipeline/blob/main/docs/decisions/README.md): ADRs. They carry the current decision state;
+- [Architecture](https://github.com/dberardi2020/career-docs/blob/main/docs/technical/architecture.md): the shape of the code.
+- [Decisions](https://github.com/dberardi2020/career-docs/blob/main/docs/decisions/README.md): ADRs. They carry the current decision state;
   when a doc disagrees with one, the ADR is right.
-- [Tickets](https://github.com/dberardi2020/resume-pipeline/blob/main/docs/tickets/tickets.md): backlog, open and done.
+- [Tickets](https://github.com/dberardi2020/career-docs/blob/main/docs/tickets/tickets.md): backlog, open and done.
 
 ## Experimental
 

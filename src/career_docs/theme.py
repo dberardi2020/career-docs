@@ -136,7 +136,7 @@ BASE = """\
 
 
 # The repository, shown in navs and footers.
-REPO = "https://github.com/dberardi2020/resume-pipeline"
+REPO = "https://github.com/dberardi2020/career-docs"
 
 
 def nav(cta: str = "", home: str = "./") -> str:
@@ -144,8 +144,8 @@ def nav(cta: str = "", home: str = "./") -> str:
     surface. `home` is where the brand links; pass ``""`` for a wordmark that is
     not a link, which is what a local tool needs — there is no front door on your
     machine, and a brand linking to the page you are already on is a dead control."""
-    brand = (f'<a class="brand" href="{home}">Resume<span>Pipeline</span></a>' if home
-             else '<span class="brand">Resume<span>Pipeline</span></span>')
+    brand = (f'<a class="brand" href="{home}">Career<span>Docs</span></a>' if home
+             else '<span class="brand">Career<span>Docs</span></span>')
     return ('<nav class="sitenav"><div class="wrap sitenav-in">'
             f'{brand}<span class="sitenav-links">{cta}</span></div></nav>')
 
@@ -190,6 +190,6 @@ def local_nav(resume_path) -> str:
 def footer(note: str = "") -> str:
     """The shared footer. `note` is the page-specific trailing sentence."""
     tail = f'<span class="sep">·</span><span>{note}</span>' if note else ""
-    return ('<footer class="sitefoot"><span>Resume Pipeline</span><span class="sep">·</span>'
+    return ('<footer class="sitefoot"><span>Career Docs</span><span class="sep">·</span>'
             '<span>MIT licensed</span><span class="sep">·</span>'
             f'<a href="{REPO}">Source on GitHub</a>{tail}</footer>')

@@ -1,6 +1,6 @@
 # Overview
 
-What `resume-pipeline` is, the problem it addresses, and the principles the rest of the
+What `career-docs` is, the problem it addresses, and the principles the rest of the
 codebase follows. Read [`concepts.md`](concepts.md) next for the vocabulary.
 
 ## The idea, in one paragraph
@@ -84,7 +84,7 @@ The tool holds no content. The workspace holds no code. That split is what lets 
 published while a resume stays private.
 
 ```
-resume-pipeline/                 a workspace/
+career-docs/                 a workspace/
   the tool. generic.               the content. private.
   ─────────────────                ──────────────────────
   render / lint / browse           profile   (the data you edit)

@@ -1,6 +1,6 @@
 # Product docs
 
-What `resume-pipeline` is, who it is for, and how to use it — no code assumed. For how it is
+What `career-docs` is, who it is for, and how to use it — no code assumed. For how it is
 built, see the [technical docs](../technical/README.md).
 
 | Doc | Read it for |

@@ -104,11 +104,11 @@ There is no config file. Everything resolves from the environment or the filesys
 
 | Variable | Effect |
 |---|---|
-| `RESUME_PIPELINE_RESUME` | Absolute path to the profile. Beaten by an explicit CLI argument. |
-| `RESUME_PIPELINE_CHROME` | Path to the browser used for PDF export. Errors if it does not exist rather than falling back silently. |
+| `CAREER_DOCS_RESUME` | Absolute path to the profile. Beaten by an explicit CLI argument. |
+| `CAREER_DOCS_CHROME` | Path to the browser used for PDF export. Errors if it does not exist rather than falling back silently. |
 | `XDG_CACHE_HOME` | Root for generated output. Defaults to `~/.cache`. |
 
-**Profile resolution**, in order: explicit argument → `RESUME_PIPELINE_RESUME` → the nearest
+**Profile resolution**, in order: explicit argument → `CAREER_DOCS_RESUME` → the nearest
 `resume.json` or `Resume/resume.json` walking up from the working directory.
 
 ## Where output goes
@@ -119,7 +119,7 @@ There is no config file. Everything resolves from the environment or the filesys
 | **Catalogue** | `<cache>/catalogue/` | Disposable; rebuild is deterministic |
 | **Scratch exports** | `<cache>/` | Disposable |
 
-`<cache>` is `${XDG_CACHE_HOME:-~/.cache}/resume-pipeline/<workspace folder name>`.
+`<cache>` is `${XDG_CACHE_HOME:-~/.cache}/career-docs/<workspace folder name>`.
 
 **The stem is not always derived.** If a complete trio already exists in the folder,
 publishing reuses that name. Otherwise it is `<Lastname>_Resume`. This exists because

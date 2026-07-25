@@ -1,9 +1,9 @@
-# Resume Pipeline
+# Career Docs
 
 **Browse thousands of resume layouts, check them for parse safety, and publish the one you
 pick — from inside your coding agent.**
 
-[![Tests](https://github.com/dberardi2020/resume-pipeline/actions/workflows/tests.yml/badge.svg)](https://github.com/dberardi2020/resume-pipeline/actions/workflows/tests.yml)
+[![Tests](https://github.com/dberardi2020/career-docs/actions/workflows/tests.yml/badge.svg)](https://github.com/dberardi2020/career-docs/actions/workflows/tests.yml)
 ![platform: macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue)
 ![python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![license: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -66,25 +66,25 @@ The full concept model is [`docs/product/concepts.md`](docs/product/concepts.md)
 **Recommended** — with [pipx](https://pipx.pypa.io):
 
 ```sh
-pipx install git+https://github.com/dberardi2020/resume-pipeline.git
+pipx install git+https://github.com/dberardi2020/career-docs.git
 ```
 
 **From a checkout** — no install at all:
 
 ```sh
-git clone https://github.com/dberardi2020/resume-pipeline.git
-cd resume-pipeline
+git clone https://github.com/dberardi2020/career-docs.git
+cd career-docs
 python3 -m venv .venv && .venv/bin/pip install -e .
-python3 -m resume_pipeline --help
+python3 -m career_docs --help
 ```
 
 Then scaffold somewhere to keep your resume:
 
 ```sh
-resume-pipeline init ~/Career     # the workspace, including the agent skills
+career-docs init ~/Career     # the workspace, including the agent skills
 cd ~/Career/Resume                # fill in resume.json, then:
-resume-pipeline lint
-resume-pipeline catalogue
+career-docs lint
+career-docs catalogue
 ```
 
 ### Hand it to your coding agent
@@ -93,17 +93,17 @@ Already inside Claude Code (or Cursor, or any coding agent)? Paste this and it w
 setup for you:
 
 ```text
-Install resume-pipeline from https://github.com/dberardi2020/resume-pipeline
+Install career-docs from https://github.com/dberardi2020/career-docs
 
-- Preferred: `pipx install git+https://github.com/dberardi2020/resume-pipeline.git`,
-  which puts a `resume-pipeline` command on my PATH. If pipx isn't available, clone the
-  repo, make a venv, `pip install -e .`, and symlink `.venv/bin/resume-pipeline` onto my
+- Preferred: `pipx install git+https://github.com/dberardi2020/career-docs.git`,
+  which puts a `career-docs` command on my PATH. If pipx isn't available, clone the
+  repo, make a venv, `pip install -e .`, and symlink `.venv/bin/career-docs` onto my
   PATH instead.
-- Then run `resume-pipeline init <where I keep my documents>` to scaffold a career
+- Then run `career-docs init <where I keep my documents>` to scaffold a career
   workspace. That also installs the `career-resume-update` and `career-layouts-browse` skills into
   the workspace's .claude/skills/, which teach you the workflow and the rules — read them before
   touching my resume.
-- Then help me fill in Resume/resume.json, run `resume-pipeline lint`, and build me a
+- Then help me fill in Resume/resume.json, run `career-docs lint`, and build me a
   catalogue of layouts to look at.
 
 It needs Python 3.11+, and a Chromium-family browser for PDF export only. Tell me if
@@ -124,7 +124,7 @@ the matching skill fires, or call it by name — both work:
 
 You don't have to invoke them by name — describe the task and the right skill fires — but you can:
 `/career-resume-update` and `/career-layouts-browse` are there when you want them. The skills carry
-no personal data, so `resume-pipeline init --skill-only` re-installs or refreshes them at any time.
+no personal data, so `career-docs init --skill-only` re-installs or refreshes them at any time.
 Everything below
 is the substrate they drive — documented so nothing is hidden, not so you type it.
 
@@ -139,11 +139,11 @@ is the substrate they drive — documented so nothing is hidden, not so you type
 | `publish --theme <spec>` | Write the deliverable (`.pdf`, `.html`, `.md`) beside the profile. |
 
 The profile path is optional everywhere: commands walk up from the working directory looking
-for `resume.json`, or read `RESUME_PIPELINE_RESUME`. `--theme` takes a preset (`default`,
+for `resume.json`, or read `CAREER_DOCS_RESUME`. `--theme` takes a preset (`default`,
 `plain`, `editorial`, `warm`) or any spec name from the catalogue.
 
 **Scratch renders never sit beside your source.** Catalogues and exports go to
-`~/.cache/resume-pipeline/`; only `publish` writes into the workspace, and only as the one
+`~/.cache/career-docs/`; only `publish` writes into the workspace, and only as the one
 canonical deliverable — so the folder always answers "which file do I send?" instantly.
 
 ## On applicant tracking systems

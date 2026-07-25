@@ -33,7 +33,7 @@ strong{font-weight:650}
 <p>Renders pile up: every layout, in HTML and PDF, every time someone looks. Written beside the profile they bury the one authored file under hundreds of derived ones — and a resume folder is usually file-synced, so it churns megabytes that a single command reproduces.</p>
 <p>The counter-argument was made and briefly won: a catalogue exists <em>to be looked at</em>, so perhaps it should live where the resume does and stay findable.</p>
 <h2 id="decision">Decision</h2>
-<p><strong>Everything generated goes to <code>${XDG_CACHE_HOME:-~/.cache}/resume-pipeline/&lt;workspace&gt;/</code>.</strong> The single exception is <code>publish</code>, which writes one canonical deliverable beside the profile.</p>
+<p><strong>Everything generated goes to <code>${XDG_CACHE_HOME:-~/.cache}/career-docs/&lt;workspace&gt;/</code>.</strong> The single exception is <code>publish</code>, which writes one canonical deliverable beside the profile.</p>
 <h2 id="rationale">Rationale</h2>
 <p>The findability argument is real but the remedy was wrong: findability comes from <strong>printing the <code>file://</code> link</strong>, not from the folder's location. Once that is said out loud, the cost of writing into a synced workspace buys nothing.</p>
 <p>A resume folder should answer one question instantly — <em>which file do I send?</em> Exactly one set of generated files belongs there, and only because it is the answer.</p>

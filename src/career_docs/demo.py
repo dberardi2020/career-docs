@@ -43,7 +43,7 @@ HERO_SPECS = [
 _LANDING = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Resume Pipeline — a design space of __TOTAL__ resume layouts</title>
+<title>Career Docs — a design space of __TOTAL__ resume layouts</title>
 <meta name="description" content="One structured profile becomes __TOTAL__ parse-safe resume layouts. Browse the whole space right here — filter on any of the seven choices, page through, open any layout.">
 <style>
   /* Design kit (tokens + shared components: reset, links, brand, buttons, card,

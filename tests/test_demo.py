@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 
-from resume_pipeline import catalogue, demo, space, viewer
+from career_docs import catalogue, demo, space, viewer
 
 
 def test_the_build_emits_a_self_contained_site(resume, tmp_path):

@@ -1,6 +1,6 @@
 # Documentation
 
-The docs for `resume-pipeline`, routed by what you came here to do.
+The docs for `career-docs`, routed by what you came here to do.
 
 **New to the project** → [`product/overview.md`](product/overview.md) — the problem, the
 approach, and the design principles the rest of it follows.

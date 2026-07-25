@@ -1,4 +1,4 @@
-# QA product map — resume-pipeline
+# QA product map — career-docs
 
 **The seasoned QA agent's memory.** Read this *first* so you act like someone who already knows the
 product, not a first-timer fumbling through it — that is the difference between a cheap pass and one
@@ -21,7 +21,7 @@ that owns it and link — duplication drifts.
 # unset the polluted env first (an installed .app leaks PYTHONHOME/PYTHONPATH and breaks the venv)
 env -u PYTHONHOME -u PYTHONPATH .venv/bin/python qa/acceptance.py           # deterministic layer
 env -u PYTHONHOME -u PYTHONPATH .venv/bin/python qa/acceptance.py --open     # + watch the viewer
-env -u PYTHONHOME -u PYTHONPATH .venv/bin/python -m resume_pipeline serve <profile> --port 8790 --no-open
+env -u PYTHONHOME -u PYTHONPATH .venv/bin/python -m career_docs serve <profile> --port 8790 --no-open
 ```
 
 Use `docs/assets/demo-profile.json` (Jane Smith) as the fixture — never a real resume.
@@ -76,7 +76,7 @@ Use `docs/assets/demo-profile.json` (Jane Smith) as the fixture — never a real
   unfiltered, 60 holding one palette, 15 holding palette+type); `«` first, `‹`/`›` prev/next, `[`/`]` keys.
 - **Card** → `Open` → **detail modal**: buttons `Copy Name`, `Export PDF`, `★ Make this my resume`,
   `Close`, plus its own colour bar. `★ Make this my resume` → `POST /api/publish` → writes the
-  deliverable (real PDF + HTML + MD) + `.resume-pipeline.json` sidecar, archiving the previous.
+  deliverable (real PDF + HTML + MD) + `.career-docs.json` sidecar, archiving the previous.
 
 ## Driving it — hard-won technique
 
@@ -132,7 +132,7 @@ Re-verify each; expected result in parens. Add new rows as surface grows.
 | 7 | Typeface filter + compose | `Type ▾ charter` → all cards that face; `moss`+`charter` → "360 of 10,080 layouts", page 1 of 15; clear → back to 10,080/420 | 2026-07-23 ✅ (driven live) |
 | 8 | Counts follow the filter (RP-0035) | header total & page count recompute per hold; `/api/page` returns live `total` | 2026-07-23 ✅ (driven live + acceptance) |
 | 9 | Header holds its shape | with several axes filtered the `« ‹ Shuffle ›` nav stays on row 1 (never wraps); colour (`#palette`) and dropdowns (`#axes`) are two stacked rows reading as one group, not one merged bar; below 900px both collapse to one left-aligned column | 2026-07-24 ✅ (RP-0043; measured live at 1400 / 950 / 700 / 500px — nav one line at every width, rows stacked and aligned, `#axes` grid-column auto below 900px) |
-| 10 | Explainer collapses and stays collapsed (RP-0018) | `#hintBtn` toggles `#hint` and flips its label between "What is this?" and "Hide"; the choice persists across a reload via `localStorage["resume-pipeline:hint-hidden"]` | 2026-07-23 ✅ (driven live) |
+| 10 | Explainer collapses and stays collapsed (RP-0018) | `#hintBtn` toggles `#hint` and flips its label between "What is this?" and "Hide"; the choice persists across a reload via `localStorage["career-docs:hint-hidden"]` | 2026-07-23 ✅ (driven live) |
 | 11 | **Multi-select is an OR** (RP-0033) | two densities → total = 2/3 of the single-density set; the `Density` pill shows a `2` badge; both values appear in the grid | 2026-07-23 ✅ (driven live + acceptance) |
 | 12 | **A dropdown must not move the header** | opening any `#axes` pill leaves the header height unchanged — a popover is positioned, not laid out. Measured delta `0px` | 2026-07-24 ✅ (re-measured live after the RP-0043 two-row restore: header 161px, delta 0px) |
 | 13 | **Card chip filters** | click a card's `clay` chip → "1,440 of 10,080 layouts", the chip goes `.on`, `Clear all` enables | 2026-07-23 ✅ (driven live) |

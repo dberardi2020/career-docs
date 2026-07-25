@@ -3,7 +3,7 @@
 What each module is responsible for, and the parts of its surface worth knowing. Roughly
 bottom-up: the data, then the space, then the renderers, then the surfaces.
 
-`src/resume_pipeline/`, 2,400 lines, stdlib only.
+`src/career_docs/`, 2,400 lines, stdlib only.
 
 | Module | Lines | Responsibility |
 |---|---|---|
@@ -90,7 +90,7 @@ layout.
 
 ## `pdf.py`
 
-`find_browser()` resolves a Chromium-family executable — `RESUME_PIPELINE_CHROME` first, then
+`find_browser()` resolves a Chromium-family executable — `CAREER_DOCS_CHROME` first, then
 known macOS and Windows paths, then `PATH` names on Linux — and raises `BrowserNotFound` with
 an actionable message. `write(html, out_path)` drives it headless to print to PDF.
 
@@ -163,7 +163,7 @@ Writing the deliverable, extracted so the command and the viewer cannot diverge.
 `write(resume, spec, out_dir, stem, formats)` renders and writes the chosen `formats` (a subset
 of `pdf, html, md`; all three by default); PDF goes last because it is the step that can fail.
 
-Publishing records two choices in a hidden `.resume-pipeline.json` sidecar so a bare re-publish
+Publishing records two choices in a hidden `.career-docs.json` sidecar so a bare re-publish
 after a content edit repeats them (ADR-0009): `write_prefs`/`read_prefs` persist and read it,
 and `recorded_layout(out_dir)` / `recorded_formats(out_dir)` return the last chosen layout id and
 format set, or None to fall back.
@@ -196,8 +196,8 @@ Argument parsing and wiring. Five commands: `init`, `lint`, `catalogue`, `serve`
 
 | Helper | Does |
 |---|---|
-| `find_resume(explicit)` | Explicit path → `RESUME_PIPELINE_RESUME` → nearest `resume.json` walking up. Exits with guidance if none. |
-| `cache_dir(path)` | `~/.cache/resume-pipeline/<workspace>` — where everything generated goes. |
+| `find_resume(explicit)` | Explicit path → `CAREER_DOCS_RESUME` → nearest `resume.json` walking up. Exits with guidance if none. |
+| `cache_dir(path)` | `~/.cache/career-docs/<workspace>` — where everything generated goes. |
 | `resolve_spec(name)` | Preset or spec name → `Spec`; exits listing the presets otherwise. |
 | `resolve_layout(name)` | The same, as a `Theme`. |
 

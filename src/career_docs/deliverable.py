@@ -8,7 +8,7 @@ A resume folder should answer that instantly, so publishing overwrites one fixed
 set of names rather than accumulating layout-suffixed variants.
 
 Two publish choices — *which layout* and *which formats* — are remembered in a
-small hidden sidecar (`.resume-pipeline.json`) beside the deliverable, so a later
+small hidden sidecar (`.career-docs.json`) beside the deliverable, so a later
 content edit can re-publish the same design without the caller restating it. The
 sidecar rather than the deliverable itself, so the choice survives deleting every
 generated file; folder-local rather than a global config, so it rides the same
@@ -26,7 +26,7 @@ from . import compose, markdown, pdf
 
 FORMATS = ("pdf", "html", "md")
 SUFFIXES = tuple(f".{fmt}" for fmt in FORMATS)
-SIDECAR = ".resume-pipeline.json"
+SIDECAR = ".career-docs.json"
 ARCHIVE_DIR = "Archive"
 
 

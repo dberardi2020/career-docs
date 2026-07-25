@@ -6,7 +6,7 @@ number and never be satisfiable by an invented one.
 """
 from __future__ import annotations
 
-from resume_pipeline import compose, lint
+from career_docs import compose, lint
 
 
 def rules(resume, **kw) -> set[str]:
@@ -110,7 +110,7 @@ def test_layout_rules_are_skipped_without_a_theme(resume):
 
 
 def test_generated_layouts_never_trip_a_layout_rule(resume):
-    from resume_pipeline import space
+    from career_docs import space
     for spec in space.spread(30):
         found = rules(resume, theme=compose.as_theme(spec))
         assert not any(r.startswith("layout/") for r in found), spec.name

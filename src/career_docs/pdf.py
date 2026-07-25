@@ -34,12 +34,12 @@ class BrowserNotFound(RuntimeError):
 
 
 def find_browser() -> str:
-    """Locate a Chromium-family browser. `RESUME_PIPELINE_CHROME` wins if set."""
-    if override := os.environ.get("RESUME_PIPELINE_CHROME"):
+    """Locate a Chromium-family browser. `CAREER_DOCS_CHROME` wins if set."""
+    if override := os.environ.get("CAREER_DOCS_CHROME"):
         if Path(override).exists():
             return override
         raise BrowserNotFound(
-            f"RESUME_PIPELINE_CHROME points at {override!r}, which does not exist."
+            f"CAREER_DOCS_CHROME points at {override!r}, which does not exist."
         )
 
     candidates = MAC if sys.platform == "darwin" else (
@@ -53,7 +53,7 @@ def find_browser() -> str:
 
     raise BrowserNotFound(
         "No Chrome/Chromium/Edge found. Install one, or set "
-        "RESUME_PIPELINE_CHROME to the executable."
+        "CAREER_DOCS_CHROME to the executable."
     )
 
 
@@ -66,7 +66,7 @@ def write(html: str, out_path: str | Path, *, timeout: int = 60) -> Path:
     # Chrome writes the PDF relative to its own working directory in some
     # versions, and refuses to read HTML from stdin, so both sides go through
     # absolute paths in a scratch directory.
-    with tempfile.TemporaryDirectory(prefix="resume-pipeline-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="career-docs-") as tmp:
         source = Path(tmp) / "resume.html"
         source.write_text(html, encoding="utf-8")
         cmd = [

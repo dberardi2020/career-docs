@@ -10,7 +10,7 @@ import re
 
 import pytest
 
-from resume_pipeline import compose, space
+from career_docs import compose, space
 
 ALL = compose.all_specs()
 

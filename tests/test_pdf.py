@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from resume_pipeline import compose, model, pdf, space
+from career_docs import compose, model, pdf, space
 
 fitz = pytest.importorskip("fitz", reason="PyMuPDF not installed")
 

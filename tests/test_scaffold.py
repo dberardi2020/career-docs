@@ -12,7 +12,7 @@ import re
 
 import pytest
 
-from resume_pipeline import cli, compose, scaffold, space
+from career_docs import cli, compose, scaffold, space
 
 WRITTEN = ("CLAUDE.md", "README.md",
            ".claude/skills/career-resume-update/SKILL.md",
@@ -63,7 +63,7 @@ def test_skill_only_refreshes_a_stale_skill(tmp_path):
     carry no user data) so a workspace cannot drift from the shipped version."""
     skill = tmp_path / ".claude/skills/career-resume-update/SKILL.md"
     skill.parent.mkdir(parents=True)
-    skill.write_text("stale: resume-pipeline build --theme all", encoding="utf-8")
+    skill.write_text("stale: career-docs build --theme all", encoding="utf-8")
     scaffold.init(tmp_path, skill_only=True)
     assert skill.read_text() == scaffold.SKILL_RESUME_UPDATE_MD
 
@@ -83,7 +83,7 @@ def test_no_double_clickable_launcher(workspace):
 
 
 def test_the_starter_resume_loads_and_lints(workspace):
-    from resume_pipeline import lint, model
+    from career_docs import lint, model
     resume = model.load(workspace / "Resume" / "resume.json")
     lint.check(resume)  # must not raise on the thing we ship
 
@@ -122,7 +122,7 @@ def _commands() -> set[str]:
 
 @pytest.mark.parametrize("text", SHIPPED_TEXT, ids=SHIPPED_IDS)
 def test_every_documented_command_exists(text):
-    documented = set(re.findall(r"resume-pipeline\s+([a-z-]+)", text))
+    documented = set(re.findall(r"career-docs\s+([a-z-]+)", text))
     unknown = documented - _commands()
     assert not unknown, f"documented but not implemented: {sorted(unknown)}"
 

@@ -28,7 +28,7 @@ hr{border:none;border-top:1px solid var(--line);margin:2em 0}
 strong{font-weight:650}
 </style></head><body><main class="wrap">
 <h1 id="overview">Overview</h1>
-<p>What <code>resume-pipeline</code> is, the problem it addresses, and the principles the rest of the codebase follows. Read <a href="concepts.md"><code>concepts.md</code></a> next for the vocabulary.</p>
+<p>What <code>career-docs</code> is, the problem it addresses, and the principles the rest of the codebase follows. Read <a href="concepts.md"><code>concepts.md</code></a> next for the vocabulary.</p>
 <h2 id="the-idea-in-one-paragraph">The idea, in one paragraph</h2>
 <p>Your resume is data, not a document — but the tools treat it as a document, so the file you send drifts from the file you edit, and choosing how it <em>looks</em> means picking from a handful of themes someone else designed. This keeps one structured <strong>profile</strong> as the only thing you edit, generates a <strong>space</strong> of layouts from it, and lets you browse that space until something looks right. The editing happens through a coding agent: you say what to change and it changes the data. Publishing writes one <strong>deliverable</strong> — PDF, HTML and Markdown — from the layout you chose.</p>
 <h2 id="who-it-is-for">Who it is for</h2>
@@ -52,7 +52,7 @@ strong{font-weight:650}
 <p>You will not find a rejection statistic anywhere in this project. The ubiquitous "75% of resumes never reach a human" traces to a vendor that folded in 2013 without ever publishing a study, and the skeptical counter-numbers are vendor-produced too. Nobody has good public data, so nothing here rests on any.</p>
 <h2 id="where-things-live">Where things live</h2>
 <p>The tool holds no content. The workspace holds no code. That split is what lets the tool be published while a resume stays private.</p>
-<pre><code>resume-pipeline/                 a workspace/
+<pre><code>career-docs/                 a workspace/
   the tool. generic.               the content. private.
   ─────────────────                ──────────────────────
   render / lint / browse           profile   (the data you edit)

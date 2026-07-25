@@ -11,7 +11,7 @@ import json
 
 import pytest
 
-from resume_pipeline import model
+from career_docs import model
 
 CLEAN = {
     "basics": {

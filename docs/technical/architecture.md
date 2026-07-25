@@ -77,7 +77,7 @@ this was two implementations that had begun to drift. See
 ### The browser is behind `pdf.py`
 
 The one external dependency. `find_browser()` resolves it at runtime across macOS, Windows and
-Linux, honouring `RESUME_PIPELINE_CHROME`, and raises `BrowserNotFound` rather than failing
+Linux, honouring `CAREER_DOCS_CHROME`, and raises `BrowserNotFound` rather than failing
 obscurely. Everything except PDF works without it.
 
 ## The server holds no session state

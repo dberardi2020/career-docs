@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from resume_pipeline import cli, compose
+from career_docs import cli, compose
 
 COMMANDS = {"lint", "catalogue", "demo", "serve", "publish", "init"}
 
@@ -24,19 +24,19 @@ def test_the_command_surface_is_exactly_this(monkeypatch):
 def test_explicit_path_wins(tmp_path, monkeypatch):
     target = tmp_path / "elsewhere.json"
     target.write_text("{}", encoding="utf-8")
-    monkeypatch.setenv("RESUME_PIPELINE_RESUME", str(tmp_path / "env.json"))
+    monkeypatch.setenv("CAREER_DOCS_RESUME", str(tmp_path / "env.json"))
     assert cli.find_resume(str(target)) == target
 
 
 def test_environment_variable_is_used(tmp_path, monkeypatch):
     target = tmp_path / "env.json"
     target.write_text("{}", encoding="utf-8")
-    monkeypatch.setenv("RESUME_PIPELINE_RESUME", str(target))
+    monkeypatch.setenv("CAREER_DOCS_RESUME", str(target))
     assert cli.find_resume(None) == target
 
 
 def test_it_walks_up_to_find_the_resume(tmp_path, monkeypatch):
-    monkeypatch.delenv("RESUME_PIPELINE_RESUME", raising=False)
+    monkeypatch.delenv("CAREER_DOCS_RESUME", raising=False)
     (tmp_path / "Resume").mkdir()
     target = tmp_path / "Resume" / "resume.json"
     target.write_text("{}", encoding="utf-8")
@@ -48,7 +48,7 @@ def test_it_walks_up_to_find_the_resume(tmp_path, monkeypatch):
 
 
 def test_no_resume_anywhere_exits(tmp_path, monkeypatch):
-    monkeypatch.delenv("RESUME_PIPELINE_RESUME", raising=False)
+    monkeypatch.delenv("CAREER_DOCS_RESUME", raising=False)
     monkeypatch.chdir(tmp_path)
     with pytest.raises(SystemExit):
         cli.find_resume(None)
@@ -78,7 +78,7 @@ def test_an_unknown_layout_exits_with_help():
 
 def test_scratch_renders_stay_out_of_the_resume_folder(tmp_path):
     cache = cli.cache_dir(tmp_path / "Resume" / "resume.json")
-    assert "resume-pipeline" in cache.parts
+    assert "career-docs" in cache.parts
     assert tmp_path not in cache.parents
 
 
@@ -93,7 +93,7 @@ def workspace(tmp_path, data):
 
 
 def test_publish_writes_the_deliverable(workspace, monkeypatch):
-    monkeypatch.setattr("resume_pipeline.pdf.write",
+    monkeypatch.setattr("career_docs.pdf.write",
                         lambda html, path, **kw: path.write_bytes(b"%PDF-fake"))
     exit_code = cli.main(["publish", str(workspace / "resume.json"),
                           "--theme", "default", "--name", "Out"])
@@ -103,7 +103,7 @@ def test_publish_writes_the_deliverable(workspace, monkeypatch):
 
 
 def test_publish_overwrites_rather_than_accumulating(workspace, monkeypatch):
-    monkeypatch.setattr("resume_pipeline.pdf.write",
+    monkeypatch.setattr("career_docs.pdf.write",
                         lambda html, path, **kw: path.write_bytes(b"%PDF-fake"))
     for theme in ("default", "plain"):
         cli.main(["publish", str(workspace / "resume.json"),
@@ -114,7 +114,7 @@ def test_publish_overwrites_rather_than_accumulating(workspace, monkeypatch):
 def test_publish_reports_a_pdf_failure(workspace, monkeypatch):
     def boom(html, path, **kw):
         raise RuntimeError("no browser here")
-    monkeypatch.setattr("resume_pipeline.pdf.write", boom)
+    monkeypatch.setattr("career_docs.pdf.write", boom)
     assert cli.main(["publish", str(workspace / "resume.json"),
                      "--theme", "default"]) == 1
 
@@ -122,13 +122,13 @@ def test_publish_reports_a_pdf_failure(workspace, monkeypatch):
 # ── keeping the layout across a content edit ──────────────────────────────────
 
 def _fake_pdf(monkeypatch):
-    monkeypatch.setattr("resume_pipeline.pdf.write",
+    monkeypatch.setattr("career_docs.pdf.write",
                         lambda html, path, **kw: path.write_bytes(b"%PDF-fake"))
 
 
 def test_publish_records_the_chosen_layout(workspace, monkeypatch):
     """The sidecar must remember which layout produced the deliverable."""
-    from resume_pipeline import compose, deliverable
+    from career_docs import compose, deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"),
               "--theme", "plain", "--name", "Out"])
@@ -139,7 +139,7 @@ def test_publish_records_the_chosen_layout(workspace, monkeypatch):
 def test_bare_publish_keeps_the_last_layout(workspace, monkeypatch, capsys):
     """A content edit re-published without --theme keeps the chosen layout,
     rather than silently snapping back to the default."""
-    from resume_pipeline import compose, deliverable
+    from career_docs import compose, deliverable
     _fake_pdf(monkeypatch)
     plain = compose.preset("plain").name
     assert plain != compose.preset("default").name  # otherwise the test proves nothing
@@ -154,7 +154,7 @@ def test_bare_publish_keeps_the_last_layout(workspace, monkeypatch, capsys):
 
 def test_the_layout_survives_deleting_every_deliverable(workspace, monkeypatch):
     """The whole point of the sidecar: the choice outlives the generated files."""
-    from resume_pipeline import compose, deliverable
+    from career_docs import compose, deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"),
               "--theme", "plain", "--name", "Out"])
@@ -164,7 +164,7 @@ def test_the_layout_survives_deleting_every_deliverable(workspace, monkeypatch):
 
 
 def test_bare_publish_defaults_when_nothing_is_recorded(workspace, monkeypatch, capsys):
-    from resume_pipeline import compose, deliverable
+    from career_docs import compose, deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"), "--name", "Out"])
     assert deliverable.recorded_layout(workspace) == compose.preset("default").name
@@ -172,7 +172,7 @@ def test_bare_publish_defaults_when_nothing_is_recorded(workspace, monkeypatch, 
 
 
 def test_explicit_theme_overrides_the_recorded_layout(workspace, monkeypatch):
-    from resume_pipeline import compose, deliverable
+    from career_docs import compose, deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"),
               "--theme", "plain", "--name", "Out"])
@@ -183,7 +183,7 @@ def test_explicit_theme_overrides_the_recorded_layout(workspace, monkeypatch):
 
 def test_recorded_layout_is_none_without_a_sidecar(tmp_path):
     """A deliverable from before this feature has no sidecar — fall back."""
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     for suffix in (".pdf", ".html", ".md"):
         (tmp_path / f"Out{suffix}").write_text("legacy", encoding="utf-8")
     assert deliverable.recorded_layout(tmp_path) is None
@@ -192,7 +192,7 @@ def test_recorded_layout_is_none_without_a_sidecar(tmp_path):
 # ── choosing which formats to emit ────────────────────────────────────────────
 
 def test_publish_writes_only_the_selected_formats(workspace, monkeypatch):
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"),
               "--formats", "pdf", "--name", "Out"])
@@ -215,7 +215,7 @@ def test_bare_publish_keeps_the_last_formats(workspace, monkeypatch, capsys):
 def test_a_pdf_only_deliverable_still_matches_its_name(workspace, monkeypatch):
     """Name reuse must survive a subset: a lone PDF is a complete deliverable
     when the sidecar records pdf-only."""
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"),
               "--formats", "pdf", "--name", "OnlyPdf"])
@@ -231,7 +231,7 @@ def test_an_unknown_format_is_rejected(workspace, monkeypatch):
 # ── archiving the previous design ─────────────────────────────────────────────
 
 def test_publish_archives_the_previous_design(workspace, monkeypatch):
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"), "--theme", "plain", "--name", "Out"])
     cli.main(["publish", str(workspace / "resume.json"), "--theme", "default", "--name", "Out"])
@@ -241,7 +241,7 @@ def test_publish_archives_the_previous_design(workspace, monkeypatch):
 
 
 def test_first_publish_has_nothing_to_archive(workspace, monkeypatch):
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"), "--name", "Out"])
     archive = workspace / deliverable.ARCHIVE_DIR
@@ -249,7 +249,7 @@ def test_first_publish_has_nothing_to_archive(workspace, monkeypatch):
 
 
 def test_the_archived_copy_is_the_old_design_not_the_new(workspace, monkeypatch):
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     _fake_pdf(monkeypatch)
     cli.main(["publish", str(workspace / "resume.json"), "--theme", "plain", "--name", "Out"])
     old_html = (workspace / "Out.html").read_text()
@@ -262,7 +262,7 @@ def test_the_archived_copy_is_the_old_design_not_the_new(workspace, monkeypatch)
 def test_rapid_publishes_do_not_collide_in_the_archive(workspace, monkeypatch):
     """Two publishes in the same second must produce two distinct snapshots, not
     one clobbering the other — the guarantee is *never lose a design*."""
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     _fake_pdf(monkeypatch)
     for theme in ("plain", "editorial", "default"):  # three publishes, back to back
         cli.main(["publish", str(workspace / "resume.json"), "--theme", theme, "--name", "Out"])
@@ -272,7 +272,7 @@ def test_rapid_publishes_do_not_collide_in_the_archive(workspace, monkeypatch):
 
 def test_publish_never_touches_existing_archive_contents(workspace, monkeypatch):
     """The user's Archive is preserved: publishing only ever adds folders."""
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     _fake_pdf(monkeypatch)
     keepsake = workspace / deliverable.ARCHIVE_DIR / "20200101-precious.json"
     keepsake.parent.mkdir(parents=True)
@@ -310,7 +310,7 @@ def test_publishing_matches_a_name_already_in_the_folder(tmp_path, resume):
     two resumes side by side, one of them stale, which is exactly the "which file
     do I send?" confusion publishing exists to end.
     """
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     for suffix in (".pdf", ".html", ".md"):
         (tmp_path / f"Resume_Smith{suffix}").write_text("old", encoding="utf-8")
 
@@ -319,14 +319,14 @@ def test_publishing_matches_a_name_already_in_the_folder(tmp_path, resume):
 
 
 def test_an_empty_folder_gets_the_derived_name(tmp_path, resume):
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     assert deliverable.existing_stem(tmp_path) is None
     assert deliverable.default_stem(resume, tmp_path) == "Smith_Resume"
 
 
 def test_an_ambiguous_folder_falls_back_to_the_derived_name(tmp_path, resume):
     """Two complete trios: no way to tell which is *the* deliverable."""
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     for stem in ("Resume_Smith", "Smith_CV"):
         for suffix in (".pdf", ".html", ".md"):
             (tmp_path / f"{stem}{suffix}").write_text("x", encoding="utf-8")
@@ -335,7 +335,7 @@ def test_an_ambiguous_folder_falls_back_to_the_derived_name(tmp_path, resume):
 
 
 def test_a_partial_trio_is_not_a_deliverable(tmp_path, resume):
-    from resume_pipeline import deliverable
+    from career_docs import deliverable
     (tmp_path / "Stray.pdf").write_text("x", encoding="utf-8")
     assert deliverable.existing_stem(tmp_path) is None
 
@@ -349,13 +349,13 @@ def test_publish_works_with_a_bare_profile_and_no_init(tmp_path, data, monkeypat
     answer to "where does publish go if init was never run" is: next to your
     resume.json, not into some workspace that does not exist.
     """
-    monkeypatch.setattr("resume_pipeline.pdf.write",
+    monkeypatch.setattr("career_docs.pdf.write",
                         lambda html, path, **kw: path.write_bytes(b"%PDF-fake"))
     loose = tmp_path / "somewhere"
     loose.mkdir()
     (loose / "resume.json").write_text(json.dumps(data), encoding="utf-8")
     monkeypatch.chdir(loose)
-    monkeypatch.delenv("RESUME_PIPELINE_RESUME", raising=False)
+    monkeypatch.delenv("CAREER_DOCS_RESUME", raising=False)
 
     assert cli.main(["publish", "--theme", "default"]) == 0
     for suffix in (".pdf", ".html", ".md"):

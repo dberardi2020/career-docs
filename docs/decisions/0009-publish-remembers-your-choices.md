@@ -18,7 +18,7 @@ persist between runs.
 ## Decision
 
 **Publish records the chosen layout and formats in a hidden sidecar,
-`.resume-pipeline.json`, beside the deliverable. A bare re-publish reuses them; an explicit
+`.career-docs.json`, beside the deliverable. A bare re-publish reuses them; an explicit
 `--theme` or `--formats` overrides and re-records.**
 
 ```json

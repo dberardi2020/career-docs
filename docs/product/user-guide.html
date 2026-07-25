@@ -31,16 +31,16 @@ strong{font-weight:650}
 <p>Install, first run, the workflow end to end, and what to do when something goes wrong. Assumes the vocabulary in <a href="concepts.md"><code>concepts.md</code></a>.</p>
 <h2 id="requirements">Requirements</h2>
 <div class="tablewrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><strong>Python</strong></td><td>3.11 or newer. Zero runtime dependencies — everything is stdlib.</td></tr><tr><td><strong>A Chromium-family browser</strong></td><td>Chrome, Chromium, Edge or Brave. Used <strong>only</strong> for PDF export, and located at runtime. Everything else works without one.</td></tr><tr><td><strong>A coding agent</strong> <em>(recommended)</em></td><td>The intended interface. <code>init</code> installs a skill that teaches it the workflow.</td></tr></tbody></table></div>
-<p>Set <code>RESUME_PIPELINE_CHROME</code> to an executable path if the browser is somewhere unusual.</p>
+<p>Set <code>CAREER_DOCS_CHROME</code> to an executable path if the browser is somewhere unusual.</p>
 <h2 id="install">Install</h2>
-<pre><code>pipx install git+https://github.com/dberardi2020/resume-pipeline.git</code></pre>
+<pre><code>pipx install git+https://github.com/dberardi2020/career-docs.git</code></pre>
 <p>Or from a checkout, with no install at all:</p>
-<pre><code>git clone https://github.com/dberardi2020/resume-pipeline.git
-cd resume-pipeline
+<pre><code>git clone https://github.com/dberardi2020/career-docs.git
+cd career-docs
 python3 -m venv .venv &amp;&amp; .venv/bin/pip install -e .
-python3 -m resume_pipeline --help</code></pre>
+python3 -m career_docs --help</code></pre>
 <h2 id="first-run">First run</h2>
-<pre><code>resume-pipeline init ~/Career</code></pre>
+<pre><code>career-docs init ~/Career</code></pre>
 <p>That writes a workspace and does not overwrite anything that already exists:</p>
 <pre><code>~/Career/
   CLAUDE.md                        the working rules, including anti-fabrication
@@ -51,7 +51,7 @@ python3 -m resume_pipeline --help</code></pre>
   Resume/Archive/                  pre-edit snapshots go here
   Cover Letters/  Applications/  Reference/</code></pre>
 <p>Then fill in <code>Resume/resume.json</code>. If you would rather see the tool working before writing anything, point it at the demo profile that renders every screenshot in these docs:</p>
-<pre><code>resume-pipeline catalogue docs/assets/demo-profile.json</code></pre>
+<pre><code>career-docs catalogue docs/assets/demo-profile.json</code></pre>
 <blockquote>
 <p><strong>Importing an existing resume is not built yet</strong> (RP-0001) — today you transcribe once. It is the biggest gap in the tool and it is the top of the backlog.</p>
 </blockquote>
@@ -63,13 +63,13 @@ python3 -m resume_pipeline --help</code></pre>
 <ul><li><strong>Never invent a career fact.</strong> No metric, date, scope claim, or technology. If a number would help, the agent asks for it and leaves the bullet unquantified until answered. Rewriting your own facts into stronger prose is the point; introducing new ones is not.</li><li><strong>Never delete a skill from the profile.</strong> Curation is a rendering choice.</li></ul>
 <p>Archive before a substantive rewrite — <code>Archive/YYYYMMDD-description.json</code>.</p>
 <h3 id="2-lint-check-it">2. Lint — check it</h3>
-<pre><code>resume-pipeline lint</code></pre>
+<pre><code>career-docs lint</code></pre>
 <p>Reports three levels: <code>ERROR</code> (likely to be mis-parsed or auto-rejected), <code>WARNING</code> (weakens the resume; a deliberate choice may override), <code>INFO</code> (worth a look, often intentional). Only errors fail the command, so it is usable in CI without forcing every nit.</p>
 <p><strong>It never edits.</strong> A finding is a question, not a task to silence. Full rule list in <a href="../technical/module-reference.md#lintpy"><code>../technical/module-reference.md</code></a>.</p>
 <h3 id="3-browse-find-a-layout">3. Browse — find a layout</h3>
 <p>Two deliveries of the same viewer.</p>
-<pre><code>resume-pipeline catalogue      # a folder of HTML you open from file://
-resume-pipeline serve          # the same viewer, with a process behind it</code></pre>
+<pre><code>career-docs catalogue      # a folder of HTML you open from file://
+career-docs serve          # the same viewer, with a process behind it</code></pre>
 <p><code>catalogue</code> writes a self-contained folder into the cache and prints a <code>file://</code> link — no server, and you can commit it or send it to someone. It is not a lesser viewer: the index browses and filters all 10,080 layouts in your browser, and writes a real render per spec beside it (plus <code>options.json</code>) as the part you commit or hand to an agent. <code>serve</code> renders previews on request and adds the two actions a static page cannot have: <strong>Export PDF</strong>, and <strong>Make this my resume</strong>, which publishes directly.</p>
 <p>Every preview is a <strong>live render</strong> — the same function that publishes — so nothing you see can drift from what you get. Cards show each spec's axis values as chips; the full name is in the detail view, and <strong>Copy Name</strong> puts it on the clipboard.</p>
 <p><strong>Moving through the space:</strong> the arrows step one page at a time, <strong>«</strong> jumps back to the first, and <strong>Shuffle</strong> lands somewhere else entirely. <code>[</code> and <code>]</code> page from the keyboard. This works the same in both — <code>catalogue</code> pages the space client-side, <code>serve</code> asks its process.</p>
@@ -78,22 +78,22 @@ resume-pipeline serve          # the same viewer, with a process behind it</code
 <p>The fastest route in is usually not the header at all — <strong>click any chip on a card</strong> to filter to that value. You are looking at a layout you like, and "more like this one" starts there.</p>
 <p>This is not a live edit. Filtering just browses the specs that match, which is exactly what would publish.</p>
 <h3 id="4-publish-write-the-deliverable">4. Publish — write the deliverable</h3>
-<pre><code>resume-pipeline publish --theme harbor-grotesk-band-pills-ladder-airy-grouped</code></pre>
+<pre><code>career-docs publish --theme harbor-grotesk-band-pills-ladder-airy-grouped</code></pre>
 <p><code>--theme</code> takes a preset (<code>default</code>, <code>plain</code>, <code>editorial</code>, <code>warm</code>) or any spec name. Writes <code>&lt;Name&gt;.pdf</code>, <code>.html</code> and <code>.md</code> beside the profile, overwriting in place — the folder always answers "which file do I send?" If a deliverable is already there under another name, that name is kept.</p>
-<p><strong>Publish remembers your choices.</strong> The chosen layout and formats are recorded in a hidden <code>.resume-pipeline.json</code> sidecar, so after a content edit a bare <code>resume-pipeline publish</code> re-renders <strong>the same layout in the same formats</strong> rather than reverting to the default. Pass <code>--theme</code> or <code>--formats</code> to change and re-record; the sidecar outlives deleting the deliverables (ADR-0009).</p>
-<pre><code>resume-pipeline publish --formats pdf     # only the PDF; html and md are skipped
-resume-pipeline publish                    # keep last layout and formats after editing content</code></pre>
+<p><strong>Publish remembers your choices.</strong> The chosen layout and formats are recorded in a hidden <code>.career-docs.json</code> sidecar, so after a content edit a bare <code>career-docs publish</code> re-renders <strong>the same layout in the same formats</strong> rather than reverting to the default. Pass <code>--theme</code> or <code>--formats</code> to change and re-record; the sidecar outlives deleting the deliverables (ADR-0009).</p>
+<pre><code>career-docs publish --formats pdf     # only the PDF; html and md are skipped
+career-docs publish                    # keep last layout and formats after editing content</code></pre>
 <p><code>--formats</code> takes any comma-separated subset of <code>pdf,html,md</code> (all three by default).</p>
 <p><strong>Publishing never destroys the previous design.</strong> Before it overwrites, the current deliverable is copied into <code>Archive/&lt;timestamp&gt;/</code> beside the resume, so the version you last sent is always recoverable. The archive only grows — nothing already in it is touched (ADR-0010).</p>
 <p>From the viewer, <strong>Make this my resume</strong> does the same thing with no name typed.</p>
 <h3 id="5-cover-letters-not-built">5. Cover letters — not built</h3>
 <p>Designed, unbuilt (RP-0009). <code>Cover Letters/</code> and <code>Applications/</code> are scaffolded and empty.</p>
 <h2 id="where-files-go">Where files go</h2>
-<div class="tablewrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><strong>The profile and the deliverable</strong></td><td>In your workspace, beside each other.</td></tr><tr><td><strong>Everything else generated</strong></td><td><code>~/.cache/resume-pipeline/&lt;workspace&gt;/</code> — catalogues, scratch exports. Safe to delete; rebuilding is instant and deterministic.</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><strong>The profile and the deliverable</strong></td><td>In your workspace, beside each other.</td></tr><tr><td><strong>Everything else generated</strong></td><td><code>~/.cache/career-docs/&lt;workspace&gt;/</code> — catalogues, scratch exports. Safe to delete; rebuilding is instant and deterministic.</td></tr></tbody></table></div>
 <p>Generated files never sit beside source. If your workspace is file-synced (Dropbox, iCloud, a NAS), this is what keeps it from churning.</p>
 <p><strong>Never create a virtualenv inside a synced workspace</strong> — virtualenvs carry absolute paths and per-machine binaries.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
-<div class="tablewrap"><table><thead><tr><th>Symptom</th><th>Cause and fix</th></tr></thead><tbody><tr><td><code>no resume found</code></td><td>No <code>resume.json</code> walking up from the working directory. Pass a path, set <code>RESUME_PIPELINE_RESUME</code>, or <code>cd</code> into the workspace.</td></tr><tr><td><code>No Chrome/Chromium/Edge found</code></td><td>PDF export needs one. Install it, or set <code>RESUME_PIPELINE_CHROME</code> to the executable. HTML and Markdown still work.</td></tr><tr><td><code>unknown layout '…'</code></td><td>Not a preset and not a valid spec name. Spec names have <strong>seven</strong> hyphen-separated segments; run <code>catalogue</code> to see real ones.</td></tr><tr><td><code>error: &lt;field&gt; is … — expected ISO 8601</code></td><td>Dates are <code>YYYY</code>, <code>YYYY-MM</code> or <code>YYYY-MM-DD</code>.</td></tr><tr><td><code>work[N] ends before it starts</code></td><td>A date got transposed — usually a bad edit. Check the archive.</td></tr><tr><td>A published file does not match the preview</td><td>Should be impossible; previews call the same render function. Re-run <code>publish</code> and file a bug.</td></tr><tr><td>Two resumes in the folder</td><td>An older deliverable under a different name. Publishing now reuses an existing name, but a pre-existing pair may need deleting by hand.</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>Symptom</th><th>Cause and fix</th></tr></thead><tbody><tr><td><code>no resume found</code></td><td>No <code>resume.json</code> walking up from the working directory. Pass a path, set <code>CAREER_DOCS_RESUME</code>, or <code>cd</code> into the workspace.</td></tr><tr><td><code>No Chrome/Chromium/Edge found</code></td><td>PDF export needs one. Install it, or set <code>CAREER_DOCS_CHROME</code> to the executable. HTML and Markdown still work.</td></tr><tr><td><code>unknown layout '…'</code></td><td>Not a preset and not a valid spec name. Spec names have <strong>seven</strong> hyphen-separated segments; run <code>catalogue</code> to see real ones.</td></tr><tr><td><code>error: &lt;field&gt; is … — expected ISO 8601</code></td><td>Dates are <code>YYYY</code>, <code>YYYY-MM</code> or <code>YYYY-MM-DD</code>.</td></tr><tr><td><code>work[N] ends before it starts</code></td><td>A date got transposed — usually a bad edit. Check the archive.</td></tr><tr><td>A published file does not match the preview</td><td>Should be impossible; previews call the same render function. Re-run <code>publish</code> and file a bug.</td></tr><tr><td>Two resumes in the folder</td><td>An older deliverable under a different name. Publishing now reuses an existing name, but a pre-existing pair may need deleting by hand.</td></tr></tbody></table></div>
 <h2 id="reference">Reference</h2>
 <p>Command surface, flags and exit codes: <a href="../technical/module-reference.md#clipy"><code>../technical/module-reference.md</code></a>.</p>
 </main></body></html>

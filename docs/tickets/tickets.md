@@ -96,7 +96,7 @@ Mostly a UI affordance: `space.neighbours(spec, radius=1)` already returns exact
 ### RP-0004 — Global style locks + loadouts {#rp-0004}
 **P2 · Feature · explore**
 
-Pin axes (e.g. always `charter` + `moss`) so browsing covers only the remaining subspace — with the samplers gone this is a filter over the enumeration, not a change to a sampler. "Loadouts" are named partial specs (pure data) offering a middle ground between one-click themes and per-axis fiddling. Shares the axis-control UI with RP-0003 and RP-0022. The `.resume-pipeline.json` sidecar's schema was left room to grow from one remembered choice to a set of named ones (`{last, saved: {…}}`) — that growth belongs here, not in RP-0030.
+Pin axes (e.g. always `charter` + `moss`) so browsing covers only the remaining subspace — with the samplers gone this is a filter over the enumeration, not a change to a sampler. "Loadouts" are named partial specs (pure data) offering a middle ground between one-click themes and per-axis fiddling. Shares the axis-control UI with RP-0003 and RP-0022. The `.career-docs.json` sidecar's schema was left room to grow from one remembered choice to a set of named ones (`{last, saved: {…}}`) — that growth belongs here, not in RP-0030.
 
 ### RP-0005 — A content design space, alongside the style space {#rp-0005}
 **P3 · Feature · model**
@@ -218,7 +218,7 @@ A planned "brand kit builder" (separate, larger project) produces named sets of 
 ### RP-0030 — Surface format choice in the viewer {#rp-0030}
 **P2 · Feature · viewer**
 
-`publish --formats` and the `.resume-pipeline.json` sidecar (ADR-0009) landed on the CLI side; the viewer's "★ Make this my resume" still always writes all three formats. Add a format toggle to the publish control so a viewer-driven publish records the same `{layout, formats}` the CLI does. Also consider a `--formats all` convenience and a note when a bare publish's formats differ from what's on disk. The sidecar's growth toward **named loadouts** belongs in RP-0004, not here.
+`publish --formats` and the `.career-docs.json` sidecar (ADR-0009) landed on the CLI side; the viewer's "★ Make this my resume" still always writes all three formats. Add a format toggle to the publish control so a viewer-driven publish records the same `{layout, formats}` the CLI does. Also consider a `--formats all` convenience and a note when a bare publish's formats differ from what's on disk. The sidecar's growth toward **named loadouts** belongs in RP-0004, not here.
 
 ### RP-0031 — Additive publish: keep several designs at once {#rp-0031}
 **P3 · Feature · publish**
@@ -268,7 +268,7 @@ Scope is deliberately **narrower than RP-0005**: choose which skills publish. No
 **Minimal shape — selection is data an agent edits; no UI.** Two candidate homes, and picking between them is this ticket's real question:
 
 - a per-skill flag in `resume.json` — content, travels with the profile, visible in diffs; or
-- a selection list in the `.resume-pipeline.json` sidecar — tool state, matching ADR-0009's precedent for remembered choices, keeping the profile pure. Also generalises to *per-target* selections later (one set for backend roles, another for agentic ones).
+- a selection list in the `.career-docs.json` sidecar — tool state, matching ADR-0009's precedent for remembered choices, keeping the profile pure. Also generalises to *per-target* selections later (one set for backend roles, another for agentic ones).
 
 **Explicitly deferred: visual/bulk management of the master list.** Selecting 30+ items one at a time through an agent is miserable — same reasoning as RP-0026 — so that wants a grid or inspector screen, and it lands after the inspector gains write access. Agent-plus-JSON is the acceptable interim.
 

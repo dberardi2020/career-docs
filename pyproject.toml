@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "resume-pipeline"
+name = "career-docs"
 version = "0.1.0"
 description = "Explore a design space of resume layouts, lint them for ATS parsing, and render to PDF."
 readme = "README.md"
@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Dimitri Berardi" }]
 keywords = ["resume", "cv", "json-resume", "ats", "pdf"]
-urls = { Homepage = "https://github.com/dberardi2020/resume-pipeline", Repository = "https://github.com/dberardi2020/resume-pipeline", Issues = "https://github.com/dberardi2020/resume-pipeline/issues" }
+urls = { Homepage = "https://github.com/dberardi2020/career-docs", Repository = "https://github.com/dberardi2020/career-docs", Issues = "https://github.com/dberardi2020/career-docs/issues" }
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
@@ -32,7 +32,7 @@ dependencies = []
 dev = ["pytest>=8", "pymupdf>=1.24"]
 
 [project.scripts]
-resume-pipeline = "resume_pipeline.cli:main"
+career-docs = "career_docs.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

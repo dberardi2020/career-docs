@@ -32,7 +32,7 @@ from . import compose, deliverable, model, pdf, space, theme, viewer
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "resume-pipeline"
+    server_version = "career-docs"
 
     def __init__(self, *args, ctx=None, **kwargs):
         self.ctx = ctx

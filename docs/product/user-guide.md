@@ -11,27 +11,27 @@ the vocabulary in [`concepts.md`](concepts.md).
 | **A Chromium-family browser** | Chrome, Chromium, Edge or Brave. Used **only** for PDF export, and located at runtime. Everything else works without one. |
 | **A coding agent** *(recommended)* | The intended interface. `init` installs a skill that teaches it the workflow. |
 
-Set `RESUME_PIPELINE_CHROME` to an executable path if the browser is somewhere unusual.
+Set `CAREER_DOCS_CHROME` to an executable path if the browser is somewhere unusual.
 
 ## Install
 
 ```sh
-pipx install git+https://github.com/dberardi2020/resume-pipeline.git
+pipx install git+https://github.com/dberardi2020/career-docs.git
 ```
 
 Or from a checkout, with no install at all:
 
 ```sh
-git clone https://github.com/dberardi2020/resume-pipeline.git
-cd resume-pipeline
+git clone https://github.com/dberardi2020/career-docs.git
+cd career-docs
 python3 -m venv .venv && .venv/bin/pip install -e .
-python3 -m resume_pipeline --help
+python3 -m career_docs --help
 ```
 
 ## First run
 
 ```sh
-resume-pipeline init ~/Career
+career-docs init ~/Career
 ```
 
 That writes a workspace and does not overwrite anything that already exists:
@@ -51,7 +51,7 @@ Then fill in `Resume/resume.json`. If you would rather see the tool working befo
 anything, point it at the demo profile that renders every screenshot in these docs:
 
 ```sh
-resume-pipeline catalogue docs/assets/demo-profile.json
+career-docs catalogue docs/assets/demo-profile.json
 ```
 
 > **Importing an existing resume is not built yet** (RP-0001) — today you transcribe once.
@@ -79,7 +79,7 @@ Archive before a substantive rewrite — `Archive/YYYYMMDD-description.json`.
 ### 2. Lint — check it
 
 ```sh
-resume-pipeline lint
+career-docs lint
 ```
 
 Reports three levels: `ERROR` (likely to be mis-parsed or auto-rejected), `WARNING` (weakens
@@ -94,8 +94,8 @@ errors fail the command, so it is usable in CI without forcing every nit.
 Two deliveries of the same viewer.
 
 ```sh
-resume-pipeline catalogue      # a folder of HTML you open from file://
-resume-pipeline serve          # the same viewer, with a process behind it
+career-docs catalogue      # a folder of HTML you open from file://
+career-docs serve          # the same viewer, with a process behind it
 ```
 
 `catalogue` writes a self-contained folder into the cache and prints a `file://` link — no
@@ -133,7 +133,7 @@ would publish.
 ### 4. Publish — write the deliverable
 
 ```sh
-resume-pipeline publish --theme harbor-grotesk-band-pills-ladder-airy-grouped
+career-docs publish --theme harbor-grotesk-band-pills-ladder-airy-grouped
 ```
 
 `--theme` takes a preset (`default`, `plain`, `editorial`, `warm`) or any spec name. Writes
@@ -142,14 +142,14 @@ answers "which file do I send?" If a deliverable is already there under another 
 name is kept.
 
 **Publish remembers your choices.** The chosen layout and formats are recorded in a hidden
-`.resume-pipeline.json` sidecar, so after a content edit a bare `resume-pipeline publish`
+`.career-docs.json` sidecar, so after a content edit a bare `career-docs publish`
 re-renders **the same layout in the same formats** rather than reverting to the default. Pass
 `--theme` or `--formats` to change and re-record; the sidecar outlives deleting the deliverables
 (ADR-0009).
 
 ```sh
-resume-pipeline publish --formats pdf     # only the PDF; html and md are skipped
-resume-pipeline publish                    # keep last layout and formats after editing content
+career-docs publish --formats pdf     # only the PDF; html and md are skipped
+career-docs publish                    # keep last layout and formats after editing content
 ```
 
 `--formats` takes any comma-separated subset of `pdf,html,md` (all three by default).
@@ -169,7 +169,7 @@ Designed, unbuilt (RP-0009). `Cover Letters/` and `Applications/` are scaffolded
 | | |
 |---|---|
 | **The profile and the deliverable** | In your workspace, beside each other. |
-| **Everything else generated** | `~/.cache/resume-pipeline/<workspace>/` — catalogues, scratch exports. Safe to delete; rebuilding is instant and deterministic. |
+| **Everything else generated** | `~/.cache/career-docs/<workspace>/` — catalogues, scratch exports. Safe to delete; rebuilding is instant and deterministic. |
 
 Generated files never sit beside source. If your workspace is file-synced (Dropbox, iCloud, a
 NAS), this is what keeps it from churning.
@@ -181,8 +181,8 @@ per-machine binaries.
 
 | Symptom | Cause and fix |
 |---|---|
-| `no resume found` | No `resume.json` walking up from the working directory. Pass a path, set `RESUME_PIPELINE_RESUME`, or `cd` into the workspace. |
-| `No Chrome/Chromium/Edge found` | PDF export needs one. Install it, or set `RESUME_PIPELINE_CHROME` to the executable. HTML and Markdown still work. |
+| `no resume found` | No `resume.json` walking up from the working directory. Pass a path, set `CAREER_DOCS_RESUME`, or `cd` into the workspace. |
+| `No Chrome/Chromium/Edge found` | PDF export needs one. Install it, or set `CAREER_DOCS_CHROME` to the executable. HTML and Markdown still work. |
 | `unknown layout '…'` | Not a preset and not a valid spec name. Spec names have **seven** hyphen-separated segments; run `catalogue` to see real ones. |
 | `error: <field> is … — expected ISO 8601` | Dates are `YYYY`, `YYYY-MM` or `YYYY-MM-DD`. |
 | `work[N] ends before it starts` | A date got transposed — usually a bad edit. Check the archive. |

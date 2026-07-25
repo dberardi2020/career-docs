@@ -616,7 +616,7 @@ let CURRENT = null;   // the spec currently open in the dialog
 // The explainer is pure onboarding and the tallest thing in the header, so it starts
 // *minimised* — one quiet "What is this?" link — and only opens if asked. The choice
 // then persists either way, so a reader who opened it keeps it open.
-const HINT_KEY = "resume-pipeline:hint-hidden";
+const HINT_KEY = "career-docs:hint-hidden";
 function setHint(hidden){
   $("#hint").hidden = hidden;
   const b = $("#hintBtn");
