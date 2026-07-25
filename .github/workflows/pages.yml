@@ -57,12 +57,13 @@ jobs:
           grep -q 'Career<span>Docs</span>' site/browse.html
           echo "landing $(du -h site/index.html | cut -f1), browser $(du -h site/browse.html | cut -f1)"
 
-      # `enablement` turns Pages on for the repo the first time this runs, so the
-      # deploy below does not fail against a repo where Pages was never configured
-      # by hand. Idempotent afterwards.
+      # Pages must already be enabled on the repo — the workflow's GITHUB_TOKEN can
+      # read the Pages config but cannot create it ("Resource not accessible by
+      # integration"), so `enablement: true` here fails. Enabling it is a one-time
+      # admin action, done for this repo and needed again only on a fork:
+      #
+      #   gh api -X POST repos/OWNER/REPO/pages -f build_type=workflow
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
