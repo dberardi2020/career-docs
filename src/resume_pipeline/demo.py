@@ -44,7 +44,7 @@ _LANDING = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Resume Pipeline — a design space of __TOTAL__ resume layouts</title>
-<meta name="description" content="One structured profile becomes __TOTAL__ parse-safe resume layouts. Browse the whole space right here — no install, no account, and the whole thing runs in your browser.">
+<meta name="description" content="One structured profile becomes __TOTAL__ parse-safe resume layouts. Browse the whole space right here — filter on any of the seven choices, page through, open any layout.">
 <style>
   /* Design kit (tokens + shared components: reset, links, brand, buttons, card,
      site nav) — one source of truth in theme.py, shared with the browser page. */
@@ -116,7 +116,7 @@ __NAV__
       <h1>Your resume is data, not a document.</h1>
       <p class="sub">One structured profile becomes a space of <b>__TOTAL__ parse-safe layouts</b>.
         Browse the whole space right here — filter on any of the seven choices, page through,
-        open any layout. <b>No install, no account</b> — the whole thing runs in your browser.</p>
+        open any layout.</p>
       <div class="cta">
         <a class="btn primary lg" href="./browse.html">Browse the layouts →</a>
         <a class="btn lg" href="__REPO__">View the source</a>
