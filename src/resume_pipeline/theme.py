@@ -30,6 +30,7 @@ light/dark pair (revisiting that is its own ticket).
 from __future__ import annotations
 
 import html as _html
+from pathlib import Path as _Path
 
 TOKENS = """\
   :root{
@@ -149,16 +150,41 @@ def nav(cta: str = "", home: str = "./") -> str:
             f'{brand}<span class="sitenav-links">{cta}</span></div></nav>')
 
 
-def local_nav(source: str) -> str:
+def workspace_label(resume_path) -> str:
+    """The name a human would use for the profile at `resume_path`.
+
+    The filename is no help — it is `resume.json` in every workspace — and neither is
+    the folder holding it when that folder is the scaffold's generic `Resume/`. So:
+    the containing folder, stepping up past `Resume/` to the workspace that actually
+    has a name (`~/Home/Career HQ/Resume/resume.json` → "Career HQ").
+    """
+    parent = _Path(resume_path).expanduser().resolve().parent
+    if parent.name.lower() == "resume" and parent.parent.name:
+        parent = parent.parent
+    return parent.name or str(parent)
+
+
+def local_nav(resume_path) -> str:
     """The top bar for a *local* tool (`serve`, `catalogue`).
 
     Same band, same measure, same wordmark as the hosted site, so the viewer you run
     and the one you link to read as one product. What differs is only what would be
     dishonest locally: the brand does not link (there is no landing page on your
-    machine), and where the site puts navigation this puts the profile being shown.
+    machine — `serve` mounts the viewer at `/` and nothing else), and where the site
+    puts navigation this names the workspace being browsed, with the full path on
+    hover. A label, not a control, because there is no local action worth a button
+    that the CLI does not already do better.
     """
-    return nav(f'<span class="navnote">{_html.escape(source)}</span>'
-               f'<a class="btn ghost" href="{REPO}">GitHub</a>', home="")
+    note = ""
+    if resume_path is not None:
+        path = _Path(resume_path).expanduser()
+        try:                      # display the path as you would type it
+            shown = "~/" + str(path.resolve().relative_to(_Path.home()))
+        except ValueError:
+            shown = str(path)
+        note = (f'<span class="navnote" title="{_html.escape(shown)}">'
+                f'{_html.escape(workspace_label(path))}</span>')
+    return nav(f'{note}<a class="btn ghost" href="{REPO}">GitHub</a>', home="")
 
 
 def footer(note: str = "") -> str:

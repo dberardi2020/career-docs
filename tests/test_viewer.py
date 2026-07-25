@@ -290,3 +290,30 @@ def test_the_preview_title_matches_the_real_render(resume):
     html_ = viewer.page(SPECS, resume, preview="embed",
                         markups=data["markups"], css=data["css"])
     assert f'const DEMO_TITLE = {json.dumps(compose.esc(resume.name))}' in html_
+
+
+# ── the local top bar ──────────────────────────────────────────────────────────
+
+def test_the_local_bar_names_the_workspace_not_the_file(tmp_path):
+    """`resume.json` is the filename in every workspace, so it identifies nothing.
+    The workspace folder does — stepping up past the scaffold's generic `Resume/`."""
+    from resume_pipeline import theme
+    hq = tmp_path / "Career HQ" / "Resume"
+    hq.mkdir(parents=True)
+    (hq / "resume.json").touch()
+    assert theme.workspace_label(hq / "resume.json") == "Career HQ"
+
+    flat = tmp_path / "side-project"
+    flat.mkdir()
+    (flat / "resume.json").touch()
+    assert theme.workspace_label(flat / "resume.json") == "side-project"
+
+
+def test_the_local_bar_does_not_link_the_brand(tmp_path):
+    """There is no landing page on your machine — `serve` mounts the viewer at `/`
+    and nothing else — so a linked brand would point at the page you are on."""
+    from resume_pipeline import theme
+    bar = theme.local_nav(tmp_path / "Career HQ" / "Resume" / "resume.json")
+    assert '<span class="brand">' in bar
+    assert 'class="brand" href' not in bar
+    assert "Overview" not in bar

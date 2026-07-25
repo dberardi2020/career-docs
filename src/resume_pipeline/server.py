@@ -92,7 +92,7 @@ class Handler(BaseHTTPRequestHandler):
             html = viewer.page(space.page(0, ctx["count"]), self._resume(),
                                preview="route", exportable=True,
                                pages=space.pages(ctx["count"]),
-                               topbar=theme.local_nav(ctx["resume_path"].name),
+                               topbar=theme.local_nav(ctx["resume_path"]),
                                footer=theme.footer())
             return self._send(html.encode(), "text/html; charset=utf-8")
 

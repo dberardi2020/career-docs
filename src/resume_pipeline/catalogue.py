@@ -21,12 +21,12 @@ from pathlib import Path
 from . import compose, space, theme, viewer
 
 
-def build(resume, count: int, out_dir: Path, source: str = "") -> tuple[Path, list]:
+def build(resume, count: int, out_dir: Path, source: Path | None = None) -> tuple[Path, list]:
     """Render `count` layouts plus an index. Returns (index path, specs).
 
     `count` is now two things at once, and deliberately: how many layouts get their
-    own file on disk, and the index's page size. `source` names the profile these came
-    from; it captions the top bar.
+    own file on disk, and the index's page size. `source` is the profile's path, if known; the
+    top bar is captioned with the workspace it names.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     specs = space.spread(count)
@@ -41,7 +41,7 @@ def build(resume, count: int, out_dir: Path, source: str = "") -> tuple[Path, li
         viewer.page(specs, resume, preview="embed",
                     pages=space.pages(count), markups=data["markups"],
                     css=data["css"], count=count,
-                    topbar=theme.local_nav(source or "resume.json"),
+                    topbar=theme.local_nav(source),
                     footer=theme.footer()),
         encoding="utf-8")
 

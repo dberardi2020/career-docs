@@ -54,7 +54,7 @@ def test_both_static_outputs_run_the_same_delivery(resume, tmp_path):
     """The hosted demo and the local catalogue are one delivery (ADR-0004). If they
     diverge, the thing you check locally stops predicting what you ship."""
     demo.build(resume, tmp_path / "site", count=6)
-    catalogue.build(resume, 6, tmp_path / "cat", source="resume.json")
+    catalogue.build(resume, 6, tmp_path / "cat", source=tmp_path / "resume.json")
     hosted = (tmp_path / "site" / "browse.html").read_text()
     local = (tmp_path / "cat" / "index.html").read_text()
     for page in (hosted, local):
@@ -65,7 +65,7 @@ def test_both_static_outputs_run_the_same_delivery(resume, tmp_path):
 def test_the_catalogue_still_writes_its_own_artifacts(resume, tmp_path):
     """Switching the index to embed must not cost the per-layout files or
     options.json — that is the part you commit, link, or hand to an agent."""
-    index, specs = catalogue.build(resume, 6, tmp_path, source="resume.json")
+    index, specs = catalogue.build(resume, 6, tmp_path, source=tmp_path / "resume.json")
     for spec in specs:
         assert (tmp_path / f"{spec.name}.html").is_file()
     options = json.loads((tmp_path / "options.json").read_text())["options"]
