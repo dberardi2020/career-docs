@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "career-docs"
 version = "0.1.0"
-description = "Explore a design space of resume layouts, lint them for ATS parsing, and render to PDF."
+description = "Your career documents as structured data: browse a design space of resume layouts, lint them for ATS parsing, and publish PDF, HTML and Markdown."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }

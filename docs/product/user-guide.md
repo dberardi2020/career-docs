@@ -31,13 +31,13 @@ python3 -m career_docs --help
 ## First run
 
 ```sh
-career-docs init ~/Career
+career-docs init ~/CareerDocs
 ```
 
 That writes a workspace and does not overwrite anything that already exists:
 
 ```
-~/Career/
+~/CareerDocs/
   CLAUDE.md                        the working rules, including anti-fabrication
   README.md                        orientation
   .claude/skills/career-resume-update/    resume-content skill

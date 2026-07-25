@@ -1,7 +1,7 @@
 # Career Docs
 
-**Browse thousands of resume layouts, check them for parse safety, and publish the one you
-pick — from inside your coding agent.**
+**Your career documents, kept as data.** Browse thousands of resume layouts, check them for
+parse safety, and publish the one you pick — from inside your coding agent.
 
 [![Tests](https://github.com/dberardi2020/career-docs/actions/workflows/tests.yml/badge.svg)](https://github.com/dberardi2020/career-docs/actions/workflows/tests.yml)
 ![platform: macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue)
@@ -16,6 +16,10 @@ This keeps one structured **profile** as the only thing you edit, generates a **
 10,080 layouts from it, and lets you browse that space until something looks right. The
 editing happens through your agent: you say what to change, it changes the data. Publishing
 writes one deliverable — PDF, HTML and Markdown — from the layout you chose.
+
+**Resumes are what works today.** The workspace `init` scaffolds already holds your cover
+letters and applications, and the name says where this is going — but the resume is the part
+that is built. Nothing below describes anything that does not exist yet.
 
 ![The layout viewer: a row of resume layouts, each a live render of the same profile in a
 different design, its axis values shown as chips beneath it — the active filter's chip
@@ -81,8 +85,8 @@ python3 -m career_docs --help
 Then scaffold somewhere to keep your resume:
 
 ```sh
-career-docs init ~/Career     # the workspace, including the agent skills
-cd ~/Career/Resume                # fill in resume.json, then:
+career-docs init ~/CareerDocs   # the workspace, including the agent skills
+cd ~/CareerDocs/Resume          # fill in resume.json, then:
 career-docs lint
 career-docs catalogue
 ```

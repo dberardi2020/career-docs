@@ -121,8 +121,8 @@ __NAV__
         <a class="btn primary lg" href="./browse.html">Browse the layouts →</a>
         <a class="btn lg" href="__REPO__">View the source</a>
       </div>
-      <p class="fine">A live demo over a sample profile (Jane Smith). The full tool — editing,
-        linting and publishing — lives in your coding agent.</p>
+      <p class="fine">A live demo over a sample profile (Jane Smith). Editing, linting and
+        publishing happen in your coding agent, in a workspace on your machine.</p>
     </div>
     <div class="stagewrap">
       <div class="stage" id="stage"><div class="track" id="track">__STAGE__</div><button class="arrow prev" id="prev" aria-label="Previous layout">‹</button><button class="arrow next" id="next" aria-label="Next layout">›</button></div>
@@ -148,7 +148,8 @@ __NAV__
       <div class="c">
         <h3>You own the data</h3>
         <p>One profile is the only thing you edit; the <b>PDF, HTML and Markdown</b> are generated
-          from it. What you see in a preview is exactly what publishes.</p>
+          from it, in a folder on your machine. What you see in a preview is exactly what
+          publishes.</p>
       </div>
     </div>
   </section>
@@ -221,8 +222,8 @@ _NAV_BROWSE = (f'<a class="btn ghost" href="{REPO}">GitHub</a>'
 
 # The footer's trailing sentence, per page. Both say the same true thing about how
 # early this is; the browser's also points back to the front door.
-_FOOT_LANDING = ("Early — this page is a demo of the layout browser; the full tool "
-                 "runs in your coding agent.")
+_FOOT_LANDING = ("Early — this page demos the layout browser; editing, linting and "
+                 "publishing happen in your coding agent.")
 _FOOT_BROWSE = ("Early — a live demo over a sample profile. "
                 '<a href="./">What this is</a>.')
 

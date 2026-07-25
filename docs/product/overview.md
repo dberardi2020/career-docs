@@ -13,6 +13,11 @@ something looks right. The editing happens through a coding agent: you say what 
 it changes the data. Publishing writes one **deliverable** — PDF, HTML and Markdown — from
 the layout you chose.
 
+Scope, stated plainly: **the resume is the part that is built.** The workspace `init`
+scaffolds also holds cover letters and applications, and the name points at bringing them
+under the same treatment — but nothing in these docs describes a capability that does not
+exist today.
+
 ## Who it is for
 
 Someone who already works inside a coding agent, keeps their resume under version control or

@@ -1,8 +1,9 @@
 # career-docs
 
-> Browse a design space of 10,080 resume layouts, check them for parse safety, and publish
-> the one you pick. Built to be driven by a coding agent rather than typed by a human.
-> Python 3.11+, zero runtime dependencies, MIT.
+> Your career documents as structured data. Browse a design space of 10,080 resume layouts,
+> check them for parse safety, and publish the one you pick. Built to be driven by a coding
+> agent rather than typed by a human. Resumes are the part that is built; the workspace also
+> holds cover letters and applications. Python 3.11+, zero runtime dependencies, MIT.
 
 The user's resume is **structured data** (JSON Resume), not a document. One profile is the
 only authored file; layouts are generated; the published deliverable is derived. If you are
